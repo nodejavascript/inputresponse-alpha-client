@@ -79,7 +79,7 @@ const CoreForm = ({ children, queryLoading, queryError, record, form, loading, e
         <Form.Item>
           <Space>
             <Button type='primary' htmlType='submit' loading={loading}>
-              Submit
+              Save
             </Button>
 
             <SimpleLink

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { gql, useMutation } from '@apollo/client'
 
+import InfoSamplingClient from '../models/InfoSamplingClient'
 import CoreForm from '../components/CoreForm'
 
 import { Form } from 'antd'
@@ -28,6 +29,7 @@ const InsertSamplingClient = ({ paths }) => {
 
   return (
     <CoreForm
+      info={<InfoSamplingClient />}
       form={form}
       loading={loading}
       error={error}

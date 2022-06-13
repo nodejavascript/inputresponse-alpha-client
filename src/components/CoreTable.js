@@ -4,8 +4,9 @@ import { returnWrappedCoreColumns } from './table'
 
 import CoreCardTitle from './CoreCardTitle'
 import ErrorQuery from './ErrorQuery'
+import CoreCodeComment from './CoreCodeComment'
 
-import { Card, Table } from 'antd'
+import { Card, Table, Space } from 'antd'
 
 const pagination = {
   showSizeChanger: true,
@@ -17,7 +18,8 @@ const size = 'small'
 const CoreTable = ({ dataSource, specificColumns, loading, error, paths }) => {
   if (error) return <ErrorQuery error={error} />
 
-  const { cardPath } = paths
+  const { cardPath, display = { } } = paths
+  const { info } = display
 
   const columns = returnWrappedCoreColumns(specificColumns, cardPath)
 
@@ -26,14 +28,20 @@ const CoreTable = ({ dataSource, specificColumns, loading, error, paths }) => {
       title={<CoreCardTitle paths={paths} />}
       loading={loading}
     >
-      <Table
-        loading={loading}
-        columns={columns}
-        dataSource={dataSource}
-        pagination={pagination}
-        scroll={scroll}
-        size={size}
-      />
+      <Space direction='vertical' size='large' style={{ width: '100%' }}>
+
+        <CoreCodeComment code={info} />
+
+        <Table
+          loading={loading}
+          columns={columns}
+          dataSource={dataSource}
+          pagination={pagination}
+          scroll={scroll}
+          size={size}
+        />
+
+      </Space>
     </Card>
   )
 }

@@ -4,6 +4,7 @@ import { gql, useMutation, useQuery } from '@apollo/client'
 import toObject from 'convert-to-object'
 import useQueryParams from '@scaleway/use-query-params'
 
+import InfoModelSample from '../models/InfoModelSample'
 import CoreForm from '../components/CoreForm'
 
 import { Form, Select, Input, Typography, Space } from 'antd'
@@ -138,6 +139,7 @@ const InsertModelSample = ({ paths }) => {
 
   return (
     <CoreForm
+      info={<InfoModelSample />}
       record={queryParams}
       queryLoading={depLoading}
       queryError={depError}

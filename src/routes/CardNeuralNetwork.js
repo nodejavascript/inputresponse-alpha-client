@@ -38,6 +38,13 @@ export const QUERY_NEURAL_NETWORK = gql`
         createdAtAgo
       }
 
+      samplingClients {
+        ${CORE_QUERY_FIELDS}
+      }
+      modelSamples {
+        ${CORE_QUERY_FIELDS}
+      }
+
     }
   }
 `

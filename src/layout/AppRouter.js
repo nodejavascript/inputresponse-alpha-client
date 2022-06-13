@@ -29,8 +29,8 @@ import CardModelSample from '../routes/CardModelSample'
 import InsertModelSample from '../routes/InsertModelSample'
 import UpdateModelSample from '../routes/UpdateModelSample'
 
-import Canvas from '../routes/Canvas'
-import Charts from '../routes/Charts'
+// import Canvas from '../routes/Canvas'
+// import Charts from '../routes/Charts'
 
 import NoMatch from '../routes/NoMatch'
 
@@ -52,7 +52,8 @@ const neutralNetworkPaths = {
   updatePath: '/updateneuralnetwork',
   display: {
     singular: 'Neural Network',
-    plural: 'Neural Networks'
+    plural: 'Neural Networks',
+    info: 'Graph theory, graph analytics with your Neural Networks.'
   }
 }
 
@@ -63,7 +64,8 @@ const samplingClientPaths = {
   updatePath: '/updatesamplingclient',
   display: {
     singular: 'Sampling Client',
-    plural: 'Sampling Clients'
+    plural: 'Sampling Clients',
+    info: 'These may be embedded, apps, users or other AI sources for example. Clients submit payloads ({ input, output }) to any of your Neural Networks.'
   }
 }
 
@@ -74,7 +76,8 @@ const modelSamplePaths = {
   updatePath: '/updatemodelsample',
   display: {
     singular: 'Model Sample',
-    plural: 'Model Samples'
+    plural: 'Model Samples',
+    info: 'Client payloads used to train your Neural Network\'s Model'
   }
 }
 
@@ -194,18 +197,18 @@ export const navigationalRoutes = [
     element: <ListModelSamples paths={modelSamplePaths} />,
     auth: true
   },
-  {
-    exact: true,
-    path: '/canvas',
-    title: 'Canvas',
-    element: <Canvas />
-  },
-  {
-    exact: true,
-    path: '/charts',
-    title: 'Charts',
-    element: <Charts />
-  },
+  // {
+  //   exact: true,
+  //   path: '/canvas',
+  //   title: 'Canvas',
+  //   element: <Canvas />
+  // },
+  // {
+  //   exact: true,
+  //   path: '/charts',
+  //   title: 'Charts',
+  //   element: <Charts />
+  // },
   {
     exact: true,
     path: '/about',

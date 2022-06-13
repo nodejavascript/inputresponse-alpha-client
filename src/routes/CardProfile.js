@@ -4,6 +4,7 @@ import { gql, useQuery } from '@apollo/client'
 import { CORE_QUERY_FIELDS } from '../lib'
 
 import UpdateProfile from './UpdateProfile'
+import InfoProfile from '../models/InfoProfile'
 import CoreCard from '../components/CoreCard'
 
 export const QUERY_PROFILE = gql`
@@ -15,6 +16,17 @@ export const QUERY_PROFILE = gql`
       neuralNetworkSize
       samplingClientSize
       userModelSize
+
+      neuralNetworks {
+        ${CORE_QUERY_FIELDS}
+      }
+      samplingClients {
+        ${CORE_QUERY_FIELDS}
+      }
+      modelSamples {
+        ${CORE_QUERY_FIELDS}
+      }
+
     }
   }
 `
@@ -26,6 +38,7 @@ const CardProfile = ({ paths }) => {
 
   return (
     <CoreCard
+      info={<InfoProfile record={record} />}
       record={record}
       loading={loading}
       error={error}

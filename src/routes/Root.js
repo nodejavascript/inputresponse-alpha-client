@@ -1,13 +1,8 @@
 import React from 'react'
 
 import CoreCard from '../components/CoreCard'
+import CoreCodeComment from '../components/CoreCodeComment'
 
-const Root = () => {
-  return (
-    <CoreCard>
-      It works!
-    </CoreCard>
-  )
-}
+const Root = () => <CoreCard info={<CoreCodeComment code='It works' />} />
 
 export default Root

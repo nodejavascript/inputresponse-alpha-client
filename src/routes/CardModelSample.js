@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import { CORE_QUERY_FIELDS } from '../lib'
 
 import UpdateModelSample from './UpdateModelSample'
+import InfoModelSample from '../models/InfoModelSample'
 import CoreCard from '../components/CoreCard'
 
 export const QUERY_MODEL_SAMPLE = gql`
@@ -16,6 +17,13 @@ export const QUERY_MODEL_SAMPLE = gql`
       samplingclientId
       input: inputDisplay
       output: outputDisplay
+
+      neuralNetwork {
+        ${CORE_QUERY_FIELDS}
+      }
+      samplingClient {
+        ${CORE_QUERY_FIELDS}
+      }
     }
   }
 `
@@ -29,6 +37,7 @@ const CardModelSample = ({ paths }) => {
 
   return (
     <CoreCard
+      info={<InfoModelSample record={record} />}
       record={record}
       loading={loading}
       error={error}

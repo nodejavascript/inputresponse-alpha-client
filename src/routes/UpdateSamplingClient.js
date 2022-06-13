@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { gql, useQuery, useMutation } from '@apollo/client'
 
+import InfoSamplingClient from '../models/InfoSamplingClient'
 import CoreForm from '../components/CoreForm'
 
 import { Form, message } from 'antd'
@@ -37,6 +38,7 @@ const UpdateSamplingClient = ({ paths, hideTitle }) => {
 
   return (
     <CoreForm
+      info={<InfoSamplingClient record={record} />}
       queryLoading={queryLoading}
       queryError={queryError}
       record={record}
