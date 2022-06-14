@@ -1,7 +1,7 @@
 {
   "name": "inputresponse-alpha-client",
   "version": "1.0.0",
-  "description": "",
+  "description": "Client utility UI for nodejavascript/inputresponse-alpha-api",
   "main": "index.js",
   "scripts": {
     "start": "react-scripts start",
