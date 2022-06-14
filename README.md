@@ -41,7 +41,7 @@
     <a href="https://github.com/nodejavascript/inputresponse-alpha-api">inputresponse-alpha-api</a>
     <br />
     <br />
-    <a href="https://github.com/nodejavascript/inputresponse-alpha-client/blob/master/src/index.js"><strong>Explore the code »</strong></a>
+    <a href="https://github.com/nodejavascript/inputresponse-alpha-client/blob/master/src/App.js"><strong>Explore the code »</strong></a>
     <br />
     <br />
     <a href="https://nodejavascript.com/demo-coming-soon">DEMO</a>
@@ -84,13 +84,13 @@
 ## About The Project
 This UI uses Google Auth to save your neural networks, setup multi-clients that use network's API key to submit machine learning data `{ input: [], output: { } }` to the API Neural Network engine.
 
-Use this UI to submit training / fitness data, disable submitted data, train your models and request inferences from many of your Neural Networks. Clients must submit payloads with an `apiKey` that you can reset at will.
+Use this UI to submit training / fitness data, disable submitted data, train your models and `request inferences` from many of your Neural Networks. Clients must submit payloads with an `apiKey` that you can reset at will.
 
 This project is under `active development`.
 
 More about my insights will follow [my article](https://nodejavascript.com/a-neural-network-engine?ref=githubAbout).
 
-ps; The charting that will come out of this project will be gloarious - stay tuned.
+ps; The charting that will come out of this project will be glorious - stay tuned.
 
 ### Built With
 
