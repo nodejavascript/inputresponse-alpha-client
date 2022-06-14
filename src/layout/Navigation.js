@@ -27,7 +27,7 @@ const Navigation = ({ children, user, pathname, auth }) => {
 
   return (
     <Row justify='space-between'>
-      <Col>
+      <Col flex={1}>
         <Menu theme='dark' onClick={onClick} selectedKeys={[selectedKeys]} mode='horizontal' items={items} />
       </Col>
       <Col>

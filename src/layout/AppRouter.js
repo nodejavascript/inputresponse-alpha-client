@@ -8,7 +8,7 @@ import {
 import Frame from './Frame'
 
 import Root from '../routes/Root'
-import Home from '../routes/Home'
+import Dashboard from '../routes/Dashboard'
 import About from '../routes/About'
 
 import CardProfile from '../routes/CardProfile'
@@ -165,9 +165,9 @@ export const navigationalRoutes = [
   },
   {
     exact: true,
-    path: '/home',
-    title: 'Home',
-    element: <Home />
+    path: '/dashboard',
+    title: 'Dashboard',
+    element: <Dashboard />
   },
   {
     exact: true,

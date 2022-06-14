@@ -3,9 +3,9 @@ import React from 'react'
 import CoreCard from '../components/CoreCard'
 import CoreCodeComment from '../components/CoreCodeComment'
 
-const Home = () => <CoreCard info={<CoreCodeComment code='You can train a model, start by adding a neural network.' />} />
+const Dashboard = () => <CoreCard info={<CoreCodeComment code='You can train a model, start by adding a neural network.' />} />
 
-export default Home
+export default Dashboard
 
 // import Iframe from 'react-iframe'
 // const CoreIframe = ({ url }) => {

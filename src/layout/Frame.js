@@ -15,8 +15,12 @@ const Frame = ({ returnCurrentRoute, children }) => {
   const user = useReactiveVar(memoryUser)
   const { pathname } = useLocation()
 
-  // nice to havve to creating breadcrumb
-  const { auth, title } = returnCurrentRoute(pathname)
+  const currentRoute = returnCurrentRoute(pathname)
+  if (!currentRoute) return children
+
+  // nice to have to creating breadcrumb
+  const { auth, title } = currentRoute
+
   document.title = title
 
   const childrenGateway = auth && !user ? <AuthenticationRequired /> : children
