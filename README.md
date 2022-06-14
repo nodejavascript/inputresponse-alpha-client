@@ -131,7 +131,7 @@ Contributions are welcome.
 <!-- LICENSE -->
 ## License
 
-See [LICENSE](https://github.com/nodejavascript/inputresponse-alpha-client/blob/main/LICENSE) for more information.
+MIT
 
 <!-- CONTACT -->
 ## Contact
