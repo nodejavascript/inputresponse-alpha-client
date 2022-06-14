@@ -82,21 +82,38 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-About The Project
+This UI uses Google Auth to save your neural networks, setup multi-clients that use network's API key to submit machine learning data `{ input: [], output: { } }` to the API Neural Network engine.
+
+Use this UI to submit training / fitness data, disable submitted data, train your models and request inferences from many of your Neural Networks. Clients must submit payloads with an `apiKey` that you can reset at will.
+
+This project is under `active development`.
+
+More about my insights will follow [my article](https://nodejavascript.com/a-neural-network-engine?ref=githubAbout).
+
+ps; The charting that will come out of this project will be gloarious - stay tuned.
 
 ### Built With
 
-* [express](https://npmjs.com/package/express)
-* [esm](https://npmjs.com/package/esm)
-* [aedes](https://npmjs.com/package/aedes)
-* [level](https://www.npmjs.com/package/level)
+* [react](https://www.npmjs.com/package/react)
+* [graphql](https://npmjs.com/package/graphql)
+* [apollo/client](https://npmjs.com/package/apollo/client)
+* [antd](https://npmjs.com/package/antd)
+* [react-google-login](https://npmjs.com/package/react-google-login)
 
 <!-- GETTING STARTED -->
 ## Getting Started
-Getting Started
+Use [NodeJS](https://github.com/nodejs) to run your own running API [inputresponse-alpha-api](https://github.com/nodejavascript/inputresponse-alpha-api)
+
+- This client was developed as an open-source utility for its [GraphQL API](https://github.com/nodejavascript/inputresponse-alpha-api).
+- This client uses Google Auth [here](https://github.com/nodejavascript/inputresponse-alpha-client/blob/master/src/components/Login.js#L13), [here](https://github.com/nodejavascript/inputresponse-alpha-client/blob/master/src/models/Auth.js#L10) and [here](https://github.com/nodejavascript/inputresponse-alpha-api/blob/master/src/logic/googleauth.js#L5) to [tokenize](https://github.com/nodejavascript/inputresponse-alpha-client/blob/master/src/lib/apolloclient.js#L34-L50) some API requests.
+
+This project is not stripped of:
+- legacy code nor seemingly deprecated code that remains commented
+- code that seems strange but there is a future reason for it
+- hard coded routing key/values in this client that will be removed when the data can be requested from the `API` instead.
 
 ### Prerequisites
-Prerequisites
+An entity that likes to blend GraphQL with ML and AI
 
 ### Installation
 1. Run locally
@@ -109,16 +126,7 @@ Prerequisites
 <!-- CONTRIBUTING -->
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Contributions are welcome.
 
 <!-- LICENSE -->
 ## License

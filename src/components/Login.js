@@ -10,14 +10,8 @@ const Login = ({ clientId, user }) => {
   if (user) return null
 
   const onLoginSuccess = res => {
-    const { tokenId, profileObj } = res
-    const { email, imageUrl } = profileObj
-    const user = {
-      tokenId,
-      email,
-      imageUrl
-    }
-    memoryUser(user)
+    const { tokenId } = res
+    memoryUser({ tokenId })
   }
 
   const onLoginFailure = err => {
