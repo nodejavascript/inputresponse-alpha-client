@@ -7,10 +7,10 @@ import SimpleLink from './SimpleLink'
 import { Space, Row, Col } from 'antd'
 import { UnorderedListOutlined } from '@ant-design/icons'
 
-export const RouteTitle = () => {
+export const RouteTitle = ({ paths }) => {
   const { pathname } = useLocation()
   const { title } = returnCurrentRoute(pathname)
-  return title
+  return paths?.display?.plural || title
 }
 
 const CoreCardTitle = ({ paths, id }) => {
@@ -44,14 +44,14 @@ const CoreCardTitle = ({ paths, id }) => {
     )
   }
 
-  if (!ListButton && !InsertButton) return <RouteTitle />
+  if (!ListButton && !InsertButton) return <RouteTitle paths={paths} />
 
   return (
     <Row justify='space-between'>
       <Col>
         <Space>
           <ListButton />
-          <RouteTitle />
+          <RouteTitle paths={paths} />
         </Space>
       </Col>
       <Col>

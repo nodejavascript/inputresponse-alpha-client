@@ -2,8 +2,24 @@ import React from 'react'
 
 import CoreCard from '../components/CoreCard'
 import CoreCodeComment from '../components/CoreCodeComment'
+import ListNeuralNetworks from './ListNeuralNetworks'
+import ListSamplingClients from './ListSamplingClients'
+import ListModelSamples from './ListModelSamples'
 
-const Dashboard = () => <CoreCard info={<CoreCodeComment code='You can train a model, start by adding a neural network.' />} />
+import { neutralNetworkPaths, samplingClientPaths, modelSamplePaths } from '../layout/AppRouter' // comes from api in future
+import { Space } from 'antd'
+
+const Dashboard = () => {
+  return (
+    <Space direction='vertical' style={{ width: '100%' }}>
+      <CoreCard info={<CoreCodeComment code='You can train a model, start by adding a neural network.' />} />
+
+      <ListNeuralNetworks paths={neutralNetworkPaths} />
+      <ListSamplingClients paths={samplingClientPaths} />
+      <ListModelSamples paths={modelSamplePaths} />
+    </Space>
+  )
+}
 
 export default Dashboard
 

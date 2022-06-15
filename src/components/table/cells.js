@@ -26,6 +26,7 @@ export const CellName = ({ record, cardPath }) => {
 }
 
 export const CellStatus = ({ record }) => {
+  if (record.archived) return <Badge status='default' text='Archived' />
   if (!record?.enabled) return <Badge status='default' text='Not enabled' />
   return <Badge status='success' text='Enabled' />
 }

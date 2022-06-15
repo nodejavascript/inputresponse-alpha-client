@@ -45,7 +45,7 @@ const profilePaths = {
   }
 }
 
-const neutralNetworkPaths = {
+export const neutralNetworkPaths = {
   insertPath: '/insertneuralnetwork',
   listPath: '/neuralnetworks',
   cardPath: '/neuralnetwork',
@@ -57,7 +57,7 @@ const neutralNetworkPaths = {
   }
 }
 
-const samplingClientPaths = {
+export const samplingClientPaths = {
   insertPath: '/insertsamplingclient',
   listPath: '/samplingclients',
   cardPath: '/samplingclient',
@@ -69,7 +69,7 @@ const samplingClientPaths = {
   }
 }
 
-const modelSamplePaths = {
+export const modelSamplePaths = {
   insertPath: '/insertmodelsample',
   listPath: '/modelsamples',
   cardPath: '/modelsample',

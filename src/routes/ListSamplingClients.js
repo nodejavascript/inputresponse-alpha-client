@@ -22,12 +22,6 @@ const ListSamplingClients = ({ paths }) => {
 
   const specificColumns = [
     {
-      title: 'User Agent',
-      key: 'userAgent',
-      dataIndex: 'userAgent',
-      sorter: (a, b) => a.userAgent && a.userAgent.localeCompare(b?.userAgent)
-    },
-    {
       title: 'Model Size',
       key: 'modelSize',
       dataIndex: 'modelSize',
