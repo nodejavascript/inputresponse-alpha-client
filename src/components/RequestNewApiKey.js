@@ -54,6 +54,7 @@ const RequestNewApiKey = ({ record }) => {
       <Modal
         visible={visible}
         title={<CellFormat topRow={record?.name} bottomRow={<CoreCopyToClipboard field='apiKey' text={record?.apiKey} />} />}
+        onCancel={() => setVisible(!visible)}
         footer={[
           <Button
             key='requestKeySave'

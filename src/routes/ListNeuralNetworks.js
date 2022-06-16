@@ -47,7 +47,7 @@ const ModelSize = ({ record }) => {
   )
 }
 
-const ModelTrained = ({ record }) => {
+export const ModelTrained = ({ record }) => {
   if (!record?.memoryNeuralNetwork) return <Badge status='default' text='Offline' />
   if (!record?.memoryNeuralNetwork.samplesPerSecond) return <Badge status='error' text='Not trained' />
   return (

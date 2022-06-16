@@ -26,7 +26,10 @@ export const QUERY_NEURAL_NETWORK = gql`
       modelSize
 
       memoryNeuralNetwork {
+        modelSize
+        trainingMs
         samplesPerSecond
+        createdAt
       }
 
       lastTrainingHistory {
