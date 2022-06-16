@@ -12,7 +12,7 @@ const AuthenticationRequired = ({ title = 'Not authenticated' }) => {
         title={title}
       >
         <Space>
-          This module requires a userId so we can save your Neural Networks, Canvases and Charts.
+          This module requires a userId so we can save your creations.
           <Auth />
         </Space>
       </Card>

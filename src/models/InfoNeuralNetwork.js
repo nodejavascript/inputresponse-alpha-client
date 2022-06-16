@@ -9,7 +9,7 @@ const InfoNeuralNetwork = ({ record }) => {
   if (!record) return null
 
   const { memoryNeuralNetwork } = record
-
+  console.log('memoryNeuralNetwork', memoryNeuralNetwork)
   return (
     <Space direction='vertical' size='large' style={{ width: '100%' }}>
 

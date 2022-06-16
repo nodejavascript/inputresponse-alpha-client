@@ -4,6 +4,7 @@ import { gql, useQuery } from '@apollo/client'
 import { CORE_QUERY_FIELDS } from '../lib'
 
 import CoreTable from '../components/CoreTable'
+import CellFormat from '../components/table/CellFormat'
 import CoreCopyToClipboard from '../components/CoreCopyToClipboard'
 
 import { green } from '@ant-design/colors'
@@ -59,6 +60,7 @@ const ModelTrained = ({ record }) => {
 
 const ApiKeyExpiry = ({ record }) => {
   if (record?.apiKeyExpired) return <Badge status='error' text='Invalid' />
+
   return <Badge status='success' text='Valid' />
 }
 
@@ -73,12 +75,6 @@ const ListNeuralNetworks = ({ paths }) => {
       sorter: (a, b) => a.onmemoryNeuralNetworkline && a.memoryNeuralNetwork.localeCompare(b?.memoryNeuralNetwork)
     },
     {
-      title: 'apiKey',
-      key: 'apiKey',
-      render: record => <CoreCopyToClipboard field='apiKey' text={record?.apiKey} />,
-      sorter: (a, b) => a.apiKey && a.apiKey.localeCompare(b?.apiKey)
-    },
-    {
       title: 'Model size',
       key: 'modelSize',
       render: record => <ModelSize record={record} />,
@@ -87,7 +83,12 @@ const ListNeuralNetworks = ({ paths }) => {
     {
       title: 'API key',
       key: 'apiKey',
-      render: record => <ApiKeyExpiry record={record} />,
+      render: record => (
+        <CellFormat
+          topRow={<ApiKeyExpiry record={record} />}
+          bottomRow={<CoreCopyToClipboard field='apiKey' text={record?.apiKey} />}
+        />
+      ),
       sorter: (a, b) => a.apiKeyExpiresUnix && a.apiKeyExpiresUnix.localeCompare(b?.apiKeyExpiresUnix)
     }
   ]

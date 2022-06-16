@@ -1,7 +1,8 @@
 import React from 'react'
 import SimpleLink from '../SimpleLink'
+import CellFormat from './CellFormat'
 
-import { Row, Typography, Badge } from 'antd'
+import { Typography, Badge } from 'antd'
 
 const { Text } = Typography
 
@@ -9,19 +10,10 @@ export const CellName = ({ record, cardPath }) => {
   const { id, name } = record
 
   return (
-    <>
-      <Row>
-        <SimpleLink to={`${cardPath}/${id}`} content={name || 'null'} style={{ paddingLeft: 0 }} />
-      </Row>
-      <Row>
-        <Text
-          style={{ fontSize: 8 }}
-          copyable
-        >
-          {id}
-        </Text>
-      </Row>
-    </>
+    <CellFormat
+      topRow={<SimpleLink to={`${cardPath}/${id}`} content={name || 'null'} style={{ paddingLeft: 0 }} />}
+      bottomRow={<Text copyable>{id}</Text>}
+    />
   )
 }
 
@@ -34,17 +26,9 @@ export const CellStatus = ({ record }) => {
 export const CellDates = ({ record }) => {
   const { updatedAtAgo, createdAt } = record
   return (
-    <>
-      <Row>
-        <Text>Updated {updatedAtAgo}</Text>
-      </Row>
-      <Row>
-        <Text
-          style={{ fontSize: 8 }}
-        >
-          Created: {createdAt}
-        </Text>
-      </Row>
-    </>
+    <CellFormat
+      topRow={<>Updated {updatedAtAgo}</>}
+      bottomRow={<>Created: {createdAt}</>}
+    />
   )
 }

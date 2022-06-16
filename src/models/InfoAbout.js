@@ -1,7 +1,6 @@
 import React from 'react'
 
-import NoConnection from '../components/NoConnection'
-import CoreCodeComment from '../components/CoreCodeComment'
+import ApiConnection from '../components/ApiConnection'
 import { Space } from 'antd'
 
 const InfoAbout = ({ record }) => {
@@ -10,8 +9,7 @@ const InfoAbout = ({ record }) => {
   return (
     <Space direction='vertical' size='large' style={{ width: '100%' }}>
 
-      <CoreCodeComment code='connection statuses' />
-      <NoConnection />
+      <ApiConnection />
 
     </Space>
   )

@@ -12,7 +12,7 @@ const CoreCopyToClipboard = ({ field, text }) => {
     if (!text) return message.error(`no text to copy field ${field}`)
   }, [field, text])
 
-  const icon = <SnippetsTwoTone style={{ fontSize: 18 }} />
+  const icon = <SnippetsTwoTone />
 
   return (
     <Text copyable={{ text, icon }}>

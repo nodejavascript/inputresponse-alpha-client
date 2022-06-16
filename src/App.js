@@ -4,7 +4,7 @@ import { client } from './lib'
 
 import './App.css'
 
-import HealthCheck from './utils/HealthCheck'
+import HealthCheck from './lib/HealthCheck'
 import AppRouter from './layout/AppRouter'
 
 const App = () => {
