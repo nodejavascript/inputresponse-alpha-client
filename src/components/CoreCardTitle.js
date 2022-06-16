@@ -38,7 +38,6 @@ const CoreCardTitle = ({ paths, id }) => {
         to={insertPath}
         type='primary'
         shape='square'
-        ghost='true'
         content='Insert'
       />
     )
