@@ -38,7 +38,6 @@ export const QUERY_NEURAL_NETWORKS = gql`
 `
 
 const ModelSize = ({ record }) => {
-  if (!record?.modelSize) return <Badge status='default' text='No data' />
   return (
     <Space size='small'>
       <Progress percent={50} steps={5} size='small' strokeColor={green[6]} showInfo={false} />
@@ -71,14 +70,13 @@ const ListNeuralNetworks = ({ paths }) => {
     {
       title: 'Neural network',
       key: 'memoryNeuralNetwork',
-      render: record => <ModelTrained record={record} />,
-      sorter: (a, b) => a.onmemoryNeuralNetworkline && a.memoryNeuralNetwork.localeCompare(b?.memoryNeuralNetwork)
-    },
-    {
-      title: 'Model size',
-      key: 'modelSize',
-      render: record => <ModelSize record={record} />,
-      sorter: (a, b) => a.modelSize && a.modelSize.localeCompare(b?.modelSize)
+      render: record => (
+        <CellFormat
+          topRow={<ModelTrained record={record} />}
+          bottomRow={<ModelSize record={record} />}
+        />
+      ),
+      sorter: (a, b) => a.memoryNeuralNetwork && a.memoryNeuralNetwork.localeCompare(b?.memoryNeuralNetwork)
     },
     {
       title: 'API key',
