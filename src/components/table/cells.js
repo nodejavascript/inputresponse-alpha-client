@@ -28,9 +28,15 @@ export const CellName = ({ record, cardPath }) => {
 }
 
 export const CellStatus = ({ record }) => {
-  if (record.archived) return <Badge status='default' text='Archived' />
-  if (!record?.enabled) return <Badge status='default' text='Not enabled' />
-  return <Badge status='success' text='Enabled' />
+  const topRow = record?.enabled ? <Badge status='success' text='Enabled' /> : <Badge status='default' text='Not enabled' />
+  const bottomRow = record?.archived ? <Badge status='warning' text='Archived' /> : null
+
+  return (
+    <CellFormat
+      topRow={topRow}
+      bottomRow={bottomRow}
+    />
+  )
 }
 
 export const CellDates = ({ record }) => {

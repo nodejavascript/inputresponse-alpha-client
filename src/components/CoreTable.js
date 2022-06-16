@@ -15,7 +15,7 @@ const pagination = {
 const scroll = { x: 700 }
 const size = 'small'
 
-const CoreTable = ({ dataSource, specificColumns, loading, error, paths }) => {
+const CoreTable = ({ dataSource, specificColumns = [], loading, error, paths }) => {
   if (error) return <ErrorQuery error={error} />
 
   const { cardPath, display = { } } = paths

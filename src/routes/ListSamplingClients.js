@@ -20,21 +20,11 @@ const QUERY_SAMPLING_CLIENTS = gql`
 const ListSamplingClients = ({ paths }) => {
   const { loading, data, error } = useQuery(QUERY_SAMPLING_CLIENTS)
 
-  const specificColumns = [
-    {
-      title: 'Model Size',
-      key: 'modelSize',
-      dataIndex: 'modelSize',
-      sorter: (a, b) => a.modelSize && a.modelSize.localeCompare(b?.modelSize)
-    }
-  ]
-
   const dataSource = data?.samplingClients
 
   return (
     <CoreTable
       dataSource={dataSource}
-      specificColumns={specificColumns}
       loading={loading}
       error={error}
       paths={paths}
