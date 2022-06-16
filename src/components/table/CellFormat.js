@@ -12,11 +12,14 @@ const CellFormat = ({ topRow, bottomRow }) => {
           <Text>{topRow}</Text>
         </Col>
       </Row>
-      <Row>
-        <Col>
-          <Text style={{ fontSize: 8 }}>{bottomRow}</Text>
-        </Col>
-      </Row>
+      {
+        bottomRow &&
+          <Row>
+            <Col>
+              <Text style={{ fontSize: 10 }}>{bottomRow}</Text>
+            </Col>
+          </Row>
+      }
     </>
   )
 }

@@ -16,13 +16,6 @@ const INSERT_NEURAL_NETWORK = gql`
   }
 `
 
-// <Form.Item
-//   name='apiKeyExpires'
-//   label='apiKeyExpires'
-// >
-//   <DatePicker showTime format='ddd, MMM D, YYYY H:mm:ss.SSS a' />
-// </Form.Item>
-
 const InsertNeuralNetwork = ({ paths }) => {
   const navigate = useNavigate()
   const [form] = Form.useForm()

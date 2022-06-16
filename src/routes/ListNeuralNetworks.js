@@ -6,6 +6,7 @@ import { CORE_QUERY_FIELDS } from '../lib'
 import CoreTable from '../components/CoreTable'
 import CellFormat from '../components/table/CellFormat'
 import CoreCopyToClipboard from '../components/CoreCopyToClipboard'
+import RequestNewApiKey from '../components/RequestNewApiKey'
 
 import { green } from '@ant-design/colors'
 import { Space, Badge, Progress } from 'antd'
