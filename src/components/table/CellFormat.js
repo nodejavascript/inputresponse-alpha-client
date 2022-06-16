@@ -8,7 +8,7 @@ const CellFormat = ({ topRow, bottomRow }) => {
   return (
     <>
       <Row>
-        <Col>
+        <Col flex={1}>
           <Text>{topRow}</Text>
         </Col>
       </Row>

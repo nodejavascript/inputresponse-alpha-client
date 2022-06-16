@@ -1,25 +1,45 @@
 import React from 'react'
 
-import NeuralNetworkController from './NeuralNetworkController'
+import CoreCodeComment from '../components/CoreCodeComment'
 import CoreCopyToClipboard from '../components/CoreCopyToClipboard'
-import { ModelTrained } from '../routes/ListNeuralNetworks'
+import ModelSize from '../components/ModelSize'
 import RequestNewApiKey from '../components/RequestNewApiKey'
+import SimpleLink from '../components/SimpleLink'
+import TrainNeuralNetwork from '../components/TrainNeuralNetwork'
+
+import { ModelTrained } from '../routes/ListNeuralNetworks'
 
 import { Space, Alert, Col } from 'antd'
 
 const InfoNeuralNetwork = ({ record }) => {
   if (!record) return null
 
-  const { memoryNeuralNetwork } = record
+  const { apiKey, modelSize } = record
 
   return (
-    <Space direction='vertical' size='large' style={{ width: '100%' }}>
+    <Space direction='vertical' style={{ width: '100%' }}>
+
+      <CoreCodeComment code='Will show who contributes to model, how much is fitness, how much is requesting intelligence.' />
+
+      <Space align='start'>
+        <SimpleLink
+          key='addSampleFromNeuralNetwork'
+          type='secondary'
+          to={`/insertmodelsample?apiKey=${apiKey}`}
+          content='Add sample'
+        />
+        <TrainNeuralNetwork record={record} />
+      </Space>
+
+      <ModelSizeWarning apiKey={apiKey} modelSize={modelSize} />
+
       <Col>
         Model: <ModelTrained record={record} />
       </Col>
-      {memoryNeuralNetwork && <Alert banner type='success' message='Trained' />}
 
-      {!memoryNeuralNetwork && <NeuralNetworkController record={record} />}
+      <Col>
+        Model size: <ModelSize record={record} />
+      </Col>
 
       <CoreCopyToClipboard field='apiKey' text={record?.apiKey} />
       <RequestNewApiKey record={record} />
@@ -29,3 +49,18 @@ const InfoNeuralNetwork = ({ record }) => {
 }
 
 export default InfoNeuralNetwork
+
+const ModelSizeWarning = ({ modelSize }) => {
+  if (modelSize) return null
+  return (
+    <Alert
+      banner
+      type='warning'
+      message={(
+        <>
+          A minimum of one sample is required to train a Model.
+        </>
+      )}
+    />
+  )
+}

@@ -4,12 +4,8 @@ import { gql, useQuery } from '@apollo/client'
 import { CORE_QUERY_FIELDS } from '../lib'
 
 import CoreTable from '../components/CoreTable'
-import CellFormat from '../components/table/CellFormat'
-import CoreCopyToClipboard from '../components/CoreCopyToClipboard'
-import RequestNewApiKey from '../components/RequestNewApiKey'
 
-import { green } from '@ant-design/colors'
-import { Space, Badge, Progress } from 'antd'
+import { Space, Badge } from 'antd'
 
 export const QUERY_NEURAL_NETWORKS = gql`
   query queryNeuralNetworks {
@@ -38,15 +34,6 @@ export const QUERY_NEURAL_NETWORKS = gql`
   }
 `
 
-const ModelSize = ({ record }) => {
-  return (
-    <Space size='small'>
-      <Progress percent={50} steps={5} size='small' strokeColor={green[6]} showInfo={false} />
-      {record.modelSize} samples
-    </Space>
-  )
-}
-
 export const ModelTrained = ({ record }) => {
   if (!record?.memoryNeuralNetwork) return <Badge status='default' text='Offline' />
   if (!record?.memoryNeuralNetwork.samplesPerSecond) return <Badge status='error' text='Not trained' />
@@ -71,23 +58,13 @@ const ListNeuralNetworks = ({ paths }) => {
     {
       title: 'Neural network',
       key: 'memoryNeuralNetwork',
-      render: record => (
-        <CellFormat
-          topRow={<ModelTrained record={record} />}
-          bottomRow={<ModelSize record={record} />}
-        />
-      ),
+      render: record => <ModelTrained record={record} />,
       sorter: (a, b) => a.memoryNeuralNetwork && a.memoryNeuralNetwork.localeCompare(b?.memoryNeuralNetwork)
     },
     {
       title: 'API key',
       key: 'apiKey',
-      render: record => (
-        <CellFormat
-          topRow={<ApiKeyExpiry record={record} />}
-          bottomRow={<CoreCopyToClipboard field='apiKey' text={record?.apiKey} />}
-        />
-      ),
+      render: record => <ApiKeyExpiry record={record} />,
       sorter: (a, b) => a.apiKeyExpiresUnix && a.apiKeyExpiresUnix.localeCompare(b?.apiKeyExpiresUnix)
     }
   ]
