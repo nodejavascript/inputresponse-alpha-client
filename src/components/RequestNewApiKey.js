@@ -5,7 +5,7 @@ import CoreCodeComment from './CoreCodeComment'
 import CoreCopyToClipboard from './CoreCopyToClipboard'
 import CellFormat from './table/CellFormat'
 
-import { Button, Modal, Form, DatePicker, Switch, Alert, Space, Col, Divider, message } from 'antd'
+import { Button, Modal, Form, DatePicker, Switch, Alert, Space, Col, Divider } from 'antd'
 
 const UPDATE_PROFILE = gql`
   mutation requestNewApiKeyMutation ($requestNewApiKeyInput: RequestNewApiKeyInput!) {
@@ -28,8 +28,8 @@ const RequestNewApiKey = ({ record }) => {
 
   useEffect(() => {
     if (!data?.requestNewApiKey) return
-    message.success('SAVED')
-  }, [data, loading, error])
+    return setVisible(false)
+  }, [data, setVisible])
 
   if (!record?.id) return null
 
