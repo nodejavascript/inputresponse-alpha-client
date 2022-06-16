@@ -3,12 +3,12 @@ import React from 'react'
 import NeuralNetworkController from './NeuralNetworkController'
 import CoreCopyToClipboard from '../components/CoreCopyToClipboard'
 
-import { Space, Alert } from 'antd'
+import { Space, Alert, Col, Card, Row } from 'antd'
 
 const InfoNeuralNetwork = ({ record }) => {
   if (!record) return null
 
-  const { apiKey, memoryNeuralNetwork } = record
+  const { memoryNeuralNetwork } = record
 
   return (
     <Space direction='vertical' size='large' style={{ width: '100%' }}>
@@ -17,10 +17,17 @@ const InfoNeuralNetwork = ({ record }) => {
 
       {!memoryNeuralNetwork && <NeuralNetworkController record={record} />}
 
-      <CoreCopyToClipboard
-        field='apiKey'
-        text={apiKey}
-      />
+      <Row justify='center'>
+        <Card
+          hoverable
+          size='small'
+          bordered={false}
+        >
+          <Col>
+            <CoreCopyToClipboard field='apiKey' text={record?.apiKey} />
+          </Col>
+        </Card>
+      </Row>
 
     </Space>
   )

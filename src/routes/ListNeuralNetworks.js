@@ -4,6 +4,7 @@ import { gql, useQuery } from '@apollo/client'
 import { CORE_QUERY_FIELDS } from '../lib'
 
 import CoreTable from '../components/CoreTable'
+import CoreCopyToClipboard from '../components/CoreCopyToClipboard'
 
 import { green } from '@ant-design/colors'
 import { Space, Badge, Progress } from 'antd'
@@ -70,6 +71,12 @@ const ListNeuralNetworks = ({ paths }) => {
       key: 'memoryNeuralNetwork',
       render: record => <ModelTrained record={record} />,
       sorter: (a, b) => a.onmemoryNeuralNetworkline && a.memoryNeuralNetwork.localeCompare(b?.memoryNeuralNetwork)
+    },
+    {
+      title: 'apiKey',
+      key: 'apiKey',
+      render: record => <CoreCopyToClipboard field='apiKey' text={record?.apiKey} />,
+      sorter: (a, b) => a.apiKey && a.apiKey.localeCompare(b?.apiKey)
     },
     {
       title: 'Model size',

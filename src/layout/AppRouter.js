@@ -171,13 +171,6 @@ export const navigationalRoutes = [
   },
   {
     exact: true,
-    path: '/profile',
-    title: 'Profile',
-    element: <CardProfile paths={profilePaths} />,
-    auth: true
-  },
-  {
-    exact: true,
     path: '/neuralnetworks',
     title: 'Neural Networks',
     element: <ListNeuralNetworks paths={neutralNetworkPaths} />,
@@ -195,6 +188,13 @@ export const navigationalRoutes = [
     path: '/modelsamples',
     title: 'Model Samples',
     element: <ListModelSamples paths={modelSamplePaths} />,
+    auth: true
+  },
+  {
+    exact: true,
+    path: '/profile',
+    title: 'Profile',
+    element: <CardProfile paths={profilePaths} />,
     auth: true
   },
   // {
