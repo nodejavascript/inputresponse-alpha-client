@@ -64,13 +64,13 @@ const ListNeuralNetworks = ({ paths }) => {
       title: 'Neural network',
       key: 'memoryNeuralNetwork',
       render: record => <ModelTrained record={record} />,
-      sorter: (a, b) => a.memoryNeuralNetwork && a.memoryNeuralNetwork.localeCompare(b?.memoryNeuralNetwork)
+      sorter: (a, b) => a?.memoryNeuralNetwork && a.memoryNeuralNetwork.localeCompare(b.memoryNeuralNetwork)
     },
     {
       title: 'API key',
       key: 'apiKey',
       render: record => <ApiKeyExpiry record={record} />,
-      sorter: (a, b) => a.apiKeyExpiresUnix && a.apiKeyExpiresUnix.localeCompare(b?.apiKeyExpiresUnix)
+      sorter: (a, b) => a?.apiKeyExpiresUnix && a.apiKeyExpiresUnix.localeCompare(b.apiKeyExpiresUnix)
     }
   ]
 

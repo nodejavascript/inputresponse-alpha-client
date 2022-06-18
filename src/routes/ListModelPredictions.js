@@ -31,26 +31,26 @@ const ListModelPredictions = ({ paths }) => {
     {
       title: 'Neural Network',
       key: 'neuralNetwork.name',
-      render: record => record?.neuralNetwork.name,
-      sorter: (a, b) => a.neuralNetwork.name && a.neuralNetwork.name.localeCompare(b?.neuralNetwork.name)
+      render: record => record?.neuralNetwork?.name,
+      sorter: (a, b) => a?.neuralNetwork?.name && a.neuralNetwork.name.localeCompare(b.neuralNetwork.name)
     },
     {
       title: 'Client',
       key: 'samplingClient.name',
-      render: record => record?.samplingClient.name,
-      sorter: (a, b) => a.samplingClient.name && a.samplingClient.name.localeCompare(b?.samplingClient.name)
+      render: record => record?.samplingClient?.name,
+      sorter: (a, b) => a?.samplingClient?.name && a.samplingClient.name.localeCompare(b.samplingClient.name)
     },
     {
       title: 'input',
       key: 'input',
       dataIndex: 'input',
-      sorter: (a, b) => a.input && a.input.localeCompare(b?.input)
+      sorter: (a, b) => a?.input && a.input.localeCompare(b.input)
     },
     {
       title: 'output',
       key: 'output',
       dataIndex: 'output',
-      sorter: (a, b) => a.output && a.output.localeCompare(b?.output)
+      sorter: (a, b) => a?.output && a.output.localeCompare(b.output)
     }
   ]
 
