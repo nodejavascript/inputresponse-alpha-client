@@ -1,27 +1,20 @@
 import React from 'react'
 import SimpleLink from '../SimpleLink'
 import CellFormat from './CellFormat'
-import ModelSize from '../ModelSize'
+// import ModelSize from '../ModelSize'
 
-import { Typography, Badge, Row, Col } from 'antd'
+import { Typography, Badge } from 'antd'
 
 const { Text } = Typography
+
+// <ModelSize record={record} />
 
 export const CellName = ({ record, cardPath }) => {
   const { id, name } = record
 
   return (
     <CellFormat
-      topRow={
-        <Row justify='space-between' align='middle'>
-          <Col flex={1}>
-            <SimpleLink to={`${cardPath}/${id}`} content={name || 'null'} style={{ paddingLeft: 0 }} />
-          </Col>
-          <Col>
-            <ModelSize record={record} />
-          </Col>
-        </Row>
-      }
+      topRow={<SimpleLink to={`${cardPath}/${id}`} content={name || 'null'} style={{ paddingLeft: 0 }} />}
       bottomRow={<Text copyable>{id}</Text>}
     />
   )

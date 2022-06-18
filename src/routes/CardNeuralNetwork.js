@@ -37,6 +37,7 @@ export const QUERY_NEURAL_NETWORK = gql`
         modelSize
         trainingMs
         samplesPerSecond
+        iterations
 
         createdAtAgo
       }

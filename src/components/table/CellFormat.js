@@ -5,11 +5,13 @@ import { Row, Col, Typography } from 'antd'
 const { Text } = Typography
 
 const CellFormat = ({ topRow, bottomRow }) => {
+  const top = <Text>{topRow}</Text>
+  if (!bottomRow) return top
   return (
     <>
       <Row>
         <Col flex={1}>
-          <Text>{topRow}</Text>
+          {top}
         </Col>
       </Row>
       {

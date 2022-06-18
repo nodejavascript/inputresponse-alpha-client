@@ -17,7 +17,7 @@ const TRAIN_NEURAL_NETWORK = gql`
   }
 `
 
-const TrainNeuralNetwork = ({ record }) => {
+const PredictionNeuralNetwork = ({ record }) => {
   const { id: neuralnetworkId } = record
 
   const [trainNeuralNetworkMutation, { data, loading, error }] = useMutation(TRAIN_NEURAL_NETWORK)
@@ -47,4 +47,4 @@ const TrainNeuralNetwork = ({ record }) => {
   )
 }
 
-export default TrainNeuralNetwork
+export default PredictionNeuralNetwork

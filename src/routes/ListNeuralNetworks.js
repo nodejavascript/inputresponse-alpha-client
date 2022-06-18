@@ -4,8 +4,10 @@ import { gql, useQuery } from '@apollo/client'
 import { CORE_QUERY_FIELDS } from '../lib'
 
 import CoreTable from '../components/CoreTable'
+import ModelSize from '../components/ModelSize'
+import CellFormat from '../components/table/CellFormat'
 
-import { Space, Badge } from 'antd'
+import { Badge } from 'antd'
 
 export const QUERY_NEURAL_NETWORKS = gql`
   query queryNeuralNetworks {
@@ -35,13 +37,16 @@ export const QUERY_NEURAL_NETWORKS = gql`
 `
 
 export const ModelTrained = ({ record }) => {
-  if (!record?.memoryNeuralNetwork) return <Badge status='default' text='Offline' />
-  if (!record?.memoryNeuralNetwork.samplesPerSecond) return <Badge status='error' text='Not trained' />
+  let topRow = <Badge status='processing' text='Trained' />
+
+  if (!record?.memoryNeuralNetwork) topRow = <Badge status='default' text='Offline' />
+  if (!record?.memoryNeuralNetwork?.samplesPerSecond) topRow = <Badge status='error' text='Not trained' />
+
   return (
-    <Space size='small'>
-      <Badge status='processing' text='Trained' />
-      @ {record.memoryNeuralNetwork.samplesPerSecond.toFixed(2)} samples / s
-    </Space>
+    <CellFormat
+      topRow={topRow}
+      bottomRow={<ModelSize record={record} />}
+    />
   )
 }
 
