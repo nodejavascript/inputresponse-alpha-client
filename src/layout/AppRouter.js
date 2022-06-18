@@ -88,7 +88,7 @@ export const modelSamplePaths = {
 
 export const modelPredictionPaths = {
   insertPath: '/insertmodelprediction',
-  listPath: '/modepredictions',
+  listPath: '/modelpredictions',
   cardPath: '/modelprediction',
   updatePath: '/updatemodelprediction',
   display: {
@@ -182,7 +182,7 @@ const otherRoutes = [
   {
     exact: true,
     path: '/insertmodelprediction',
-    title: 'Insert Sample',
+    title: 'Insert Prediction',
     element: <InsertModelPrediction paths={modelPredictionPaths} />,
     auth: true
   },
@@ -231,7 +231,7 @@ export const navigationalRoutes = [
   },
   {
     exact: true,
-    path: '/modelprediction',
+    path: '/modelpredictions',
     title: 'Predictions',
     element: <ListModelPredictions paths={modelPredictionPaths} />,
     auth: true

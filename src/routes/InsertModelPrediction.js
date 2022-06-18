@@ -9,8 +9,7 @@ import CoreForm from '../components/CoreForm'
 
 import { Form, Select, Input, Typography, Space } from 'antd'
 
-const predictionInput = '{ r: 0, g: 0, b: 0 }'
-const predictionOutput = '[ 1 ]'
+const predictionInput = '{ r: 45, g: 45, b: 45 }'
 
 export const QUERY_MODEL_PREDICTION_DEPENDENCIES = gql`
   query queryProfile {
@@ -97,18 +96,6 @@ export const FormModelPrediction = ({ record, neuralNetworks, samplingClients })
           <Space>
             input
             <Typography.Text type='secondary' italic>{predictionInput}</Typography.Text>
-          </Space>
-        }
-      >
-        <Input.TextArea />
-      </Form.Item>
-
-      <Form.Item
-        name='output'
-        label={
-          <Space>
-            output
-            <Typography.Text type='secondary' italic>{predictionOutput}</Typography.Text>
           </Space>
         }
       >
