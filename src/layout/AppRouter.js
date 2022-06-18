@@ -36,6 +36,7 @@ import UpdateModelPrediction from '../routes/UpdateModelPrediction'
 
 // import Canvas from '../routes/Canvas'
 // import Charts from '../routes/Charts'
+import PiAi from '../routes/PiAi'
 
 import NoMatch from '../routes/NoMatch'
 
@@ -255,6 +256,12 @@ export const navigationalRoutes = [
   //   title: 'Charts',
   //   element: <Charts />
   // },
+  {
+    exact: true,
+    path: '/piai',
+    title: 'PiAi',
+    element: <PiAi />
+  },
   {
     exact: true,
     path: '/about',

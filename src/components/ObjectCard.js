@@ -9,7 +9,7 @@ import CoreDescriptions from './CoreDescriptions'
 
 import { Card } from 'antd'
 
-const CoreCard = ({ record, buttons, loading, error }) => {
+const ObjectCard = ({ record, buttons, loading, error }) => {
   const { pathname } = useLocation()
   const title = returnTitle(pathname)
 
@@ -26,4 +26,4 @@ const CoreCard = ({ record, buttons, loading, error }) => {
   )
 }
 
-export default CoreCard
+export default ObjectCard
