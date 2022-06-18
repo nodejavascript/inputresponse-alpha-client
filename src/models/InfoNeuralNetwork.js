@@ -6,7 +6,6 @@ import ModelSize from '../components/ModelSize'
 import RequestNewApiKey from '../components/RequestNewApiKey'
 import SimpleLink from '../components/SimpleLink'
 import TrainNeuralNetwork from '../components/TrainNeuralNetwork'
-import PredictionNeuralNetwork from '../components/PredictionNeuralNetwork'
 
 import { ModelTrained } from '../routes/ListNeuralNetworks'
 
@@ -30,7 +29,12 @@ const InfoNeuralNetwork = ({ record }) => {
           content='Add sample'
         />
         <TrainNeuralNetwork record={record} />
-        <PredictionNeuralNetwork record={record} />
+        <SimpleLink
+          key='requestPredictionFromNeuralNetwork'
+          type='secondary'
+          to={`/insertmodelprediction?apiKey=${apiKey}`}
+          content='Request prediction'
+        />
       </Space>
 
       <ModelSizeWarning apiKey={apiKey} modelSize={modelSize} />

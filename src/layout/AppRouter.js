@@ -29,6 +29,11 @@ import CardModelSample from '../routes/CardModelSample'
 import InsertModelSample from '../routes/InsertModelSample'
 import UpdateModelSample from '../routes/UpdateModelSample'
 
+import ListModelPredictions from '../routes/ListModelSamples'
+import CardModelPrediction from '../routes/CardModelSample'
+import InsertModelPrediction from '../routes/InsertModelSample'
+import UpdateModelPrediction from '../routes/UpdateModelSample'
+
 // import Canvas from '../routes/Canvas'
 // import Charts from '../routes/Charts'
 
@@ -78,6 +83,18 @@ export const modelSamplePaths = {
     singular: 'Model Sample',
     plural: 'Model Samples',
     info: 'Client payloads used to train your Neural Network\'s Model'
+  }
+}
+
+export const modelPredictionPaths = {
+  insertPath: '/insertmodelprediction',
+  listPath: '/modepredictions',
+  cardPath: '/modelprediction',
+  updatePath: '/updatemodelprediction',
+  display: {
+    singular: 'Model Prediction',
+    plural: 'Model Predictions',
+    info: 'Predictions from your Neural Network\'s Model'
   }
 }
 
@@ -153,6 +170,28 @@ const otherRoutes = [
     title: 'Update Model Sample',
     element: <UpdateModelSample paths={modelSamplePaths} />,
     auth: true
+  },
+
+  {
+    exact: true,
+    path: '/modelprediction/:modelpredictionId',
+    title: 'Model Prediction',
+    element: <CardModelPrediction paths={modelPredictionPaths} />,
+    auth: true
+  },
+  {
+    exact: true,
+    path: '/insertmodelprediction',
+    title: 'Insert Model Sample',
+    element: <InsertModelPrediction paths={modelPredictionPaths} />,
+    auth: true
+  },
+  {
+    exact: true,
+    path: '/updatemodelprediction/:modelpredictionId',
+    title: 'Update Model Prediction',
+    element: <UpdateModelPrediction paths={modelPredictionPaths} />,
+    auth: true
   }
 ]
 
@@ -188,6 +227,13 @@ export const navigationalRoutes = [
     path: '/modelsamples',
     title: 'Model Samples',
     element: <ListModelSamples paths={modelSamplePaths} />,
+    auth: true
+  },
+  {
+    exact: true,
+    path: '/modelprediction',
+    title: 'Model Predictions',
+    element: <ListModelPredictions paths={modelPredictionPaths} />,
     auth: true
   },
   {
