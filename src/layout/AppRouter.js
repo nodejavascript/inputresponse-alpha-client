@@ -29,10 +29,10 @@ import CardModelSample from '../routes/CardModelSample'
 import InsertModelSample from '../routes/InsertModelSample'
 import UpdateModelSample from '../routes/UpdateModelSample'
 
-import ListModelPredictions from '../routes/ListModelSamples'
-import CardModelPrediction from '../routes/CardModelSample'
-import InsertModelPrediction from '../routes/InsertModelSample'
-import UpdateModelPrediction from '../routes/UpdateModelSample'
+import ListModelPredictions from '../routes/ListModelPredictions'
+import CardModelPrediction from '../routes/CardModelPrediction'
+import InsertModelPrediction from '../routes/InsertModelPrediction'
+import UpdateModelPrediction from '../routes/UpdateModelPrediction'
 
 // import Canvas from '../routes/Canvas'
 // import Charts from '../routes/Charts'
@@ -68,8 +68,8 @@ export const samplingClientPaths = {
   cardPath: '/samplingclient',
   updatePath: '/updatesamplingclient',
   display: {
-    singular: 'Sampling Client',
-    plural: 'Sampling Clients',
+    singular: 'Client',
+    plural: 'Clients',
     info: 'These may be embedded, apps, users or other AI sources for example. Clients submit payloads ({ input, output }) to any of your Neural Networks.'
   }
 }
@@ -80,8 +80,8 @@ export const modelSamplePaths = {
   cardPath: '/modelsample',
   updatePath: '/updatemodelsample',
   display: {
-    singular: 'Model Sample',
-    plural: 'Model Samples',
+    singular: 'Sample',
+    plural: 'Samples',
     info: 'Client payloads used to train your Neural Network\'s Model'
   }
 }
@@ -92,8 +92,8 @@ export const modelPredictionPaths = {
   cardPath: '/modelprediction',
   updatePath: '/updatemodelprediction',
   display: {
-    singular: 'Model Prediction',
-    plural: 'Model Predictions',
+    singular: 'Prediction',
+    plural: 'Predictions',
     info: 'Predictions from your Neural Network\'s Model'
   }
 }
@@ -131,21 +131,21 @@ const otherRoutes = [
   {
     exact: true,
     path: '/samplingclient/:samplingclientId',
-    title: 'Sampling Client',
+    title: 'Client',
     element: <CardSamplingClient paths={samplingClientPaths} />,
     auth: true
   },
   {
     exact: true,
     path: '/insertsamplingclient',
-    title: 'Insert Sampling Client',
+    title: 'Insert Client',
     element: <InsertSamplingClient paths={samplingClientPaths} />,
     auth: true
   },
   {
     exact: true,
     path: '/updatesamplingclient/:samplingclientId',
-    title: 'Update Sampling Client',
+    title: 'Update Client',
     element: <UpdateSamplingClient paths={samplingClientPaths} />,
     auth: true
   },
@@ -153,21 +153,21 @@ const otherRoutes = [
   {
     exact: true,
     path: '/modelsample/:modelsampleId',
-    title: 'Model Sample',
+    title: 'Sample',
     element: <CardModelSample paths={modelSamplePaths} />,
     auth: true
   },
   {
     exact: true,
     path: '/insertmodelsample',
-    title: 'Insert Model Sample',
+    title: 'Insert Sample',
     element: <InsertModelSample paths={modelSamplePaths} />,
     auth: true
   },
   {
     exact: true,
     path: '/updatemodelsample/:modelsampleId',
-    title: 'Update Model Sample',
+    title: 'Update Sample',
     element: <UpdateModelSample paths={modelSamplePaths} />,
     auth: true
   },
@@ -175,21 +175,21 @@ const otherRoutes = [
   {
     exact: true,
     path: '/modelprediction/:modelpredictionId',
-    title: 'Model Prediction',
+    title: 'Prediction',
     element: <CardModelPrediction paths={modelPredictionPaths} />,
     auth: true
   },
   {
     exact: true,
     path: '/insertmodelprediction',
-    title: 'Insert Model Sample',
+    title: 'Insert Sample',
     element: <InsertModelPrediction paths={modelPredictionPaths} />,
     auth: true
   },
   {
     exact: true,
     path: '/updatemodelprediction/:modelpredictionId',
-    title: 'Update Model Prediction',
+    title: 'Update Prediction',
     element: <UpdateModelPrediction paths={modelPredictionPaths} />,
     auth: true
   }
@@ -218,21 +218,21 @@ export const navigationalRoutes = [
   {
     exact: true,
     path: '/samplingclients',
-    title: 'Sampling Clients',
+    title: 'Clients',
     element: <ListSamplingClients paths={samplingClientPaths} />,
     auth: true
   },
   {
     exact: true,
     path: '/modelsamples',
-    title: 'Model Samples',
+    title: 'Samples',
     element: <ListModelSamples paths={modelSamplePaths} />,
     auth: true
   },
   {
     exact: true,
     path: '/modelprediction',
-    title: 'Model Predictions',
+    title: 'Predictions',
     element: <ListModelPredictions paths={modelPredictionPaths} />,
     auth: true
   },

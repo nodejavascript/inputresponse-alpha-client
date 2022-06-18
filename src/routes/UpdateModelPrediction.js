@@ -3,48 +3,48 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import toObject from 'convert-to-object'
 
-import InfoModelSample from '../models/InfoModelSample'
+import InfoModelPrediction from '../models/InfoModelPrediction'
 import CoreForm from '../components/CoreForm'
 
-import { QUERY_MODEL_SAMPLE_DEPENDENCIES, FormModelSample } from './InsertModelSample'
-import { QUERY_MODEL_SAMPLE } from './CardModelSample'
+import { QUERY_MODEL_PREDICTION_DEPENDENCIES, FormModelPrediction } from './InsertModelPrediction'
+import { QUERY_MODEL_PREDICTION } from './CardModelPrediction'
 
 import { Form, message } from 'antd'
 
-const UPDATE_MODEL_SAMPLE = gql`
-  mutation updateModelSampleMutation ($updateModelSampleInput: UpdateModelSampleInput!) {
-    updateModelSample (updateModelSampleInput: $updateModelSampleInput) {
+const UPDATE_MODEL_PREDICTION = gql`
+  mutation updateModelPredictionMutation ($updateModelPredictionInput: UpdateModelPredictionInput!) {
+    updateModelPrediction (updateModelPredictionInput: $updateModelPredictionInput) {
       id
     }
   }
 `
 
-const UpdateModelSample = ({ paths, hideTitle }) => {
-  const { modelsampleId } = useParams()
+const UpdateModelPrediction = ({ paths, hideTitle }) => {
+  const { modelpredictionId } = useParams()
   const [form] = Form.useForm()
   const navigate = useNavigate()
   const { cardPath } = paths
 
-  const { data: depData, loading: depLoading, error: depError } = useQuery(QUERY_MODEL_SAMPLE_DEPENDENCIES)
-  const { data: queryData, loading: queryLoading, error: queryError } = useQuery(QUERY_MODEL_SAMPLE, { variables: { queryModelSampleInput: { modelsampleId } } })
+  const { data: depData, loading: depLoading, error: depError } = useQuery(QUERY_MODEL_PREDICTION_DEPENDENCIES)
+  const { data: queryData, loading: queryLoading, error: queryError } = useQuery(QUERY_MODEL_PREDICTION, { variables: { queryModelPredictionInput: { modelpredictionId } } })
 
-  const [updateModelSampleMutation, { data, loading, error }] = useMutation(UPDATE_MODEL_SAMPLE)
+  const [updateModelPredictionMutation, { data, loading, error }] = useMutation(UPDATE_MODEL_PREDICTION)
 
   useEffect(() => {
-    if (data?.updateModelSample) {
+    if (data?.updateModelPrediction) {
       message.success('SAVED')
-      navigate(`${cardPath}/${data.updateModelSample.id}`, { replace: true })
+      navigate(`${cardPath}/${data.updateModelPrediction.id}`, { replace: true })
     }
   }, [data, navigate, cardPath])
 
-  const record = queryData?.modelSample
+  const record = queryData?.modelPrediction
 
   const neuralNetworks = depData?.profile?.neuralNetworks || []
   const samplingClients = depData?.profile?.samplingClients || []
 
   return (
     <CoreForm
-      info={<InfoModelSample record={record} />}
+      info={<InfoModelPrediction record={record} />}
       queryLoading={queryLoading || depLoading}
       queryError={queryError || depError}
       record={record}
@@ -56,17 +56,17 @@ const UpdateModelSample = ({ paths, hideTitle }) => {
         const input = values.input && toObject(values.input)
         const output = values.output && JSON.parse(values.output)
 
-        return updateModelSampleMutation({
+        return updateModelPredictionMutation({
           variables: {
-            updateModelSampleInput: { ...values, input, output, modelsampleId }
+            updateModelPredictionInput: { ...values, input, output, modelpredictionId }
           }
         })
       }}
       hideTitle={hideTitle}
     >
-      <FormModelSample record={record} neuralNetworks={neuralNetworks} samplingClients={samplingClients} />
+      <FormModelPrediction record={record} neuralNetworks={neuralNetworks} samplingClients={samplingClients} />
     </CoreForm>
   )
 }
 
-export default UpdateModelSample
+export default UpdateModelPrediction

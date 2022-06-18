@@ -35,7 +35,7 @@ const ListModelSamples = ({ paths }) => {
       sorter: (a, b) => a.neuralNetwork.name && a.neuralNetwork.name.localeCompare(b?.neuralNetwork.name)
     },
     {
-      title: 'Sampling Client',
+      title: 'Client',
       key: 'samplingClient.name',
       render: record => record?.samplingClient.name,
       sorter: (a, b) => a.samplingClient.name && a.samplingClient.name.localeCompare(b?.samplingClient.name)

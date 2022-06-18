@@ -4,13 +4,13 @@ import { useParams } from 'react-router-dom'
 
 import { CORE_QUERY_FIELDS } from '../lib'
 
-import UpdateModelSample from './UpdateModelSample'
-import InfoModelSample from '../models/InfoModelSample'
+import UpdateModelPrediction from './UpdateModelPrediction'
+import InfoModelPrediction from '../models/InfoModelPrediction'
 import CoreCard from '../components/CoreCard'
 
-export const QUERY_MODEL_SAMPLE = gql`
-  query queryModelSample ($queryModelSampleInput: QueryModelSampleInput!) {
-    modelSample (queryModelSampleInput: $queryModelSampleInput) {
+export const QUERY_MODEL_PREDICTION = gql`
+  query queryModelPrediction ($queryModelPredictionInput: QueryModelPredictionInput!) {
+    modelPrediction (queryModelPredictionInput: $queryModelPredictionInput) {
       ${CORE_QUERY_FIELDS}
 
       neuralnetworkId
@@ -28,23 +28,23 @@ export const QUERY_MODEL_SAMPLE = gql`
   }
 `
 
-const CardModelSample = ({ paths }) => {
-  const { modelsampleId } = useParams()
+const CardModelPrediction = ({ paths }) => {
+  const { modelpredictionId } = useParams()
 
-  const { loading, data, error } = useQuery(QUERY_MODEL_SAMPLE, { variables: { queryModelSampleInput: { modelsampleId } } })
+  const { loading, data, error } = useQuery(QUERY_MODEL_PREDICTION, { variables: { queryModelPredictionInput: { modelpredictionId } } })
 
-  const record = data?.modelSample
+  const record = data?.modelPrediction
 
   return (
     <CoreCard
-      info={<InfoModelSample record={record} />}
+      info={<InfoModelPrediction record={record} />}
       record={record}
       loading={loading}
       error={error}
       paths={paths}
-      updateForm={<UpdateModelSample paths={paths} hideTitle={1} />}
+      updateForm={<UpdateModelPrediction paths={paths} hideTitle={1} />}
     />
   )
 }
 
-export default CardModelSample
+export default CardModelPrediction

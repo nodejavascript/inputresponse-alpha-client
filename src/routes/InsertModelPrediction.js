@@ -4,15 +4,15 @@ import { gql, useMutation, useQuery } from '@apollo/client'
 import toObject from 'convert-to-object'
 import useQueryParams from '@scaleway/use-query-params'
 
-import InfoModelSample from '../models/InfoModelSample'
+import InfoModelPrediction from '../models/InfoModelPrediction'
 import CoreForm from '../components/CoreForm'
 
 import { Form, Select, Input, Typography, Space } from 'antd'
 
-const sampleInput = '{ r: 0, g: 0, b: 0 }'
-const sampleOutput = '[ 1 ]'
+const predictionInput = '{ r: 0, g: 0, b: 0 }'
+const predictionOutput = '[ 1 ]'
 
-export const QUERY_MODEL_SAMPLE_DEPENDENCIES = gql`
+export const QUERY_MODEL_PREDICTION_DEPENDENCIES = gql`
   query queryProfile {
     profile {
       neuralNetworks {
@@ -32,15 +32,15 @@ export const QUERY_MODEL_SAMPLE_DEPENDENCIES = gql`
 }
 `
 
-const INSERT_MODEL_SAMPLE = gql`
-  mutation insertModelSampleMutation ($insertModelSampleInput: InsertModelSampleInput!) {
-    insertModelSample (insertModelSampleInput: $insertModelSampleInput) {
+const INSERT_MODEL_PREDICTION = gql`
+  mutation insertModelPredictionMutation ($insertModelPredictionInput: InsertModelPredictionInput!) {
+    insertModelPrediction (insertModelPredictionInput: $insertModelPredictionInput) {
       id
     }
   }
 `
 
-export const FormModelSample = ({ record, neuralNetworks, samplingClients }) => {
+export const FormModelPrediction = ({ record, neuralNetworks, samplingClients }) => {
   return (
     <>
 
@@ -71,7 +71,7 @@ export const FormModelSample = ({ record, neuralNetworks, samplingClients }) => 
 
             <Form.Item
               name='samplingclientId'
-              label='Sampling Client'
+              label='Client'
             >
               <Select>
                 {
@@ -96,7 +96,7 @@ export const FormModelSample = ({ record, neuralNetworks, samplingClients }) => 
         label={
           <Space>
             input
-            <Typography.Text type='secondary' italic>{sampleInput}</Typography.Text>
+            <Typography.Text type='secondary' italic>{predictionInput}</Typography.Text>
           </Space>
         }
       >
@@ -108,7 +108,7 @@ export const FormModelSample = ({ record, neuralNetworks, samplingClients }) => 
         label={
           <Space>
             output
-            <Typography.Text type='secondary' italic>{sampleOutput}</Typography.Text>
+            <Typography.Text type='secondary' italic>{predictionOutput}</Typography.Text>
           </Space>
         }
       >
@@ -118,20 +118,20 @@ export const FormModelSample = ({ record, neuralNetworks, samplingClients }) => 
   )
 }
 
-const InsertModelSample = ({ paths }) => {
+const InsertModelPrediction = ({ paths }) => {
   const { queryParams } = useQueryParams()
 
   const navigate = useNavigate()
   const [form] = Form.useForm()
   const { cardPath } = paths
 
-  const { data: depData, loading: depLoading, error: depError } = useQuery(QUERY_MODEL_SAMPLE_DEPENDENCIES)
+  const { data: depData, loading: depLoading, error: depError } = useQuery(QUERY_MODEL_PREDICTION_DEPENDENCIES)
 
-  const [insertModelSampleMutation, { data, loading, error }] = useMutation(INSERT_MODEL_SAMPLE)
+  const [insertModelPredictionMutation, { data, loading, error }] = useMutation(INSERT_MODEL_PREDICTION)
 
   useEffect(() => {
-    if (!data?.insertModelSample) return
-    navigate(`${cardPath}/${data.insertModelSample.id}`, { replace: true })
+    if (!data?.insertModelPrediction) return
+    navigate(`${cardPath}/${data.insertModelPrediction.id}`, { replace: true })
   }, [data, navigate, cardPath])
 
   const neuralNetworks = depData?.profile?.neuralNetworks || []
@@ -139,7 +139,7 @@ const InsertModelSample = ({ paths }) => {
 
   return (
     <CoreForm
-      info={<InfoModelSample />}
+      info={<InfoModelPrediction />}
       record={queryParams}
       queryLoading={depLoading}
       queryError={depError}
@@ -151,16 +151,16 @@ const InsertModelSample = ({ paths }) => {
         const input = values.input && toObject(values.input)
         const output = values.output && JSON.parse(values.output)
 
-        return insertModelSampleMutation({
+        return insertModelPredictionMutation({
           variables: {
-            insertModelSampleInput: { ...values, input, output }
+            insertModelPredictionInput: { ...values, input, output }
           }
         })
       }}
     >
-      <FormModelSample neuralNetworks={neuralNetworks} samplingClients={samplingClients} />
+      <FormModelPrediction neuralNetworks={neuralNetworks} samplingClients={samplingClients} />
     </CoreForm>
   )
 }
 
-export default InsertModelSample
+export default InsertModelPrediction

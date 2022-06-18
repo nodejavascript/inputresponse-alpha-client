@@ -71,7 +71,7 @@ export const FormModelSample = ({ record, neuralNetworks, samplingClients }) => 
 
             <Form.Item
               name='samplingclientId'
-              label='Sampling Client'
+              label='Client'
             >
               <Select>
                 {

@@ -5,9 +5,9 @@ import { CORE_QUERY_FIELDS } from '../lib'
 
 import CoreTable from '../components/CoreTable'
 
-const QUERY_MODEL_SAMPLES = gql`
-  query queryModelSamples {
-    modelSamples {
+const QUERY_MODEL_PREDICTIONS = gql`
+  query queryModelPredictions {
+    modelPredictions {
       ${CORE_QUERY_FIELDS}
 
       samplingclientId
@@ -24,8 +24,8 @@ const QUERY_MODEL_SAMPLES = gql`
     }
   }
 `
-const ListModelSamples = ({ paths }) => {
-  const { loading, data, error } = useQuery(QUERY_MODEL_SAMPLES)
+const ListModelPredictions = ({ paths }) => {
+  const { loading, data, error } = useQuery(QUERY_MODEL_PREDICTIONS)
 
   const specificColumns = [
     {
@@ -35,7 +35,7 @@ const ListModelSamples = ({ paths }) => {
       sorter: (a, b) => a.neuralNetwork.name && a.neuralNetwork.name.localeCompare(b?.neuralNetwork.name)
     },
     {
-      title: 'Sampling Client',
+      title: 'Client',
       key: 'samplingClient.name',
       render: record => record?.samplingClient.name,
       sorter: (a, b) => a.samplingClient.name && a.samplingClient.name.localeCompare(b?.samplingClient.name)
@@ -54,7 +54,7 @@ const ListModelSamples = ({ paths }) => {
     }
   ]
 
-  const dataSource = data?.modelSamples
+  const dataSource = data?.modelPredictions
 
   return (
     <CoreTable
@@ -67,4 +67,4 @@ const ListModelSamples = ({ paths }) => {
   )
 }
 
-export default ListModelSamples
+export default ListModelPredictions
