@@ -1,13 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { gql, useQuery, useMutation } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 
 import ErrorQuery from '../components/ErrorQuery'
 import CenterContent from '../components/CenterContent'
 import { QUERY_NEURAL_NETWORK } from '../routes/CardNeuralNetwork'
 import { INSERT_MODEL_SAMPLE } from '../routes/InsertModelSample'
 import { UPDATE_MODEL_SAMPLE } from '../routes/UpdateModelSample'
+import { TRAIN_NEURAL_NETWORK } from '../components/TrainNeuralNetwork'
 
-import { Space, Card, Col } from 'antd'
+import { Space, Card, Col, Spin, Button } from 'antd'
 
 const neuralnetworkId = '62ae4da63976c4a5dfbbab9f'
 const samplingclientId = '62ae59ca3976c4a5dfbbabff'
@@ -59,8 +60,16 @@ const PiAi = () => {
   // const contextRef = useRef(null)
 
   const [dimensions, setDimensions] = useState()
-  const [samplesAdded, setSamplesAdded] = useState()
+  const [neuralNetwork, setNeuralnetwork] = useState()
 
+  const {
+    data: queryNeuralNetworkData,
+    loading: queryNeuralNetworkLoading,
+    error: queryNeuralNetworkError,
+    refetch: queryNeuralNetworkRefetch
+  } = useQuery(QUERY_NEURAL_NETWORK, { variables: { queryNeuralNetworkInput: { neuralnetworkId } } })
+
+  // set dimensions after canvas loads
   useEffect(() => {
     const canvas = canvasRef.current
     const width = window.innerWidth * 2
@@ -72,25 +81,17 @@ const PiAi = () => {
     return setDimensions({ width, height })
   }, [setDimensions])
 
-  const {
-    data: queryNeuralNetworkData,
-    loading: queryNeuralNetworkLoading,
-    error: queryNeuralNetworkError,
-    refetch: queryNeuralNetworkRefetch
-  } = useQuery(QUERY_NEURAL_NETWORK, { variables: { queryNeuralNetworkInput: { neuralnetworkId } } })
-
   const [insertModelSampleMutation, { loading: insertModelSampleLoading, error: insertModelSampleError }] = useMutation(INSERT_MODEL_SAMPLE)
   const [updateModelSampleMutation, { loading: updateModelSampleLoading, error: updateModelSampleError }] = useMutation(UPDATE_MODEL_SAMPLE)
+  const [trainNeuralNetworkMutation, { loading: trainNeuralNetworkLoading, error: trainNeuralNetworkError }] = useMutation(TRAIN_NEURAL_NETWORK)
 
+  // SETUP
   useEffect(async () => {
-    if (samplesAdded) return queryNeuralNetworkRefetch()
+    if (neuralNetwork) return queryNeuralNetworkRefetch()
     if (!dimensions) return
-    if (!queryNeuralNetworkData) return
+    if (!queryNeuralNetworkData?.neuralNetwork) return
 
-    const { neuralNetwork } = queryNeuralNetworkData
-    if (!neuralNetwork) return
-
-    const { apiKey, modelSamples } = neuralNetwork
+    const { apiKey, modelSamples } = queryNeuralNetworkData.neuralNetwork
     const insertCredentials = { apiKey, samplingclientId }
 
     await Promise.all(
@@ -115,8 +116,18 @@ const PiAi = () => {
       })
     )
 
-    return setSamplesAdded(true)
-  }, [queryNeuralNetworkData, dimensions, samplesAdded, setSamplesAdded, queryNeuralNetworkRefetch])
+    await trainNeuralNetworkMutation({
+      variables: {
+        trainNeuralNetworkInput: { neuralnetworkId }
+      }
+    })
+
+    return setNeuralnetwork(queryNeuralNetworkData.neuralNetwork)
+  }, [queryNeuralNetworkData, dimensions, neuralNetwork, setNeuralnetwork, queryNeuralNetworkRefetch])
+
+  useEffect(() => {
+    if (neuralNetwork) console.log('neuralNetwork', neuralNetwork)
+  }, [neuralNetwork])
 
   // const mouseDown = ({ nativeEvent }) => {
   //   const { offsetX, offsetY } = nativeEvent
@@ -131,6 +142,7 @@ const PiAi = () => {
   if (queryNeuralNetworkError) return <ErrorQuery error={queryNeuralNetworkError} />
   if (insertModelSampleError) return <ErrorQuery error={insertModelSampleError} />
   if (updateModelSampleError) return <ErrorQuery error={updateModelSampleError} />
+  if (trainNeuralNetworkError) return <ErrorQuery error={trainNeuralNetworkError} />
 
   return (
     <CenterContent>
@@ -145,13 +157,27 @@ const PiAi = () => {
             loading={queryNeuralNetworkLoading.toString()}
           >
             <Col>
-              {'STATUS: '}
-
+              SETUP:
+              {' '}
+              {!neuralNetwork && <Spin size='small' />}
+              {' '}
               {!dimensions && 'Loading dimensions'}
               {updateModelSampleLoading && 'Disabling exisitng samples'}
               {insertModelSampleLoading && 'Inserting training samples'}
-              {samplesAdded && 'Ready'}
+              {neuralNetwork && 'Ready'}
             </Col>
+
+            <Col>
+              Model:
+              {' '}
+              {!neuralNetwork?.memoryNeuralNetwork && 'Untrained'}
+              {neuralNetwork?.memoryNeuralNetwork?.trainingMs && `Training time: ${neuralNetwork.memoryNeuralNetwork.trainingMs} ms`}
+
+              {trainNeuralNetworkLoading && <Spin size='small' />}
+              {' '}
+              {trainNeuralNetworkLoading && 'Training..'}
+            </Col>
+
 
           </Space>
         </Card>

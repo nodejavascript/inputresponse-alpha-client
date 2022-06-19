@@ -5,7 +5,7 @@ import ErrorMessage from './ErrorMessage'
 
 import { Space, Button, message } from 'antd'
 
-const TRAIN_NEURAL_NETWORK = gql`
+export const TRAIN_NEURAL_NETWORK = gql`
   mutation trainNeuralNetworkMutation ($trainNeuralNetworkInput: TrainNeuralNetworkInput!) {
     trainNeuralNetwork (trainNeuralNetworkInput: $trainNeuralNetworkInput) {
       id
