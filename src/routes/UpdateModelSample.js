@@ -11,7 +11,7 @@ import { QUERY_MODEL_SAMPLE } from './CardModelSample'
 
 import { Form, message } from 'antd'
 
-const UPDATE_MODEL_SAMPLE = gql`
+export const UPDATE_MODEL_SAMPLE = gql`
   mutation updateModelSampleMutation ($updateModelSampleInput: UpdateModelSampleInput!) {
     updateModelSample (updateModelSampleInput: $updateModelSampleInput) {
       id

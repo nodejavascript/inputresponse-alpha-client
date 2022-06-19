@@ -32,7 +32,7 @@ export const QUERY_MODEL_SAMPLE_DEPENDENCIES = gql`
 }
 `
 
-const INSERT_MODEL_SAMPLE = gql`
+export const INSERT_MODEL_SAMPLE = gql`
   mutation insertModelSampleMutation ($insertModelSampleInput: InsertModelSampleInput!) {
     insertModelSample (insertModelSampleInput: $insertModelSampleInput) {
       id

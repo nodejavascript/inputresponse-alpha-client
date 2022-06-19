@@ -47,6 +47,8 @@ export const QUERY_NEURAL_NETWORK = gql`
       }
       modelSamples {
         ${CORE_QUERY_FIELDS}
+        input
+        output
       }
 
     }
