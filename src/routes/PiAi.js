@@ -1,18 +1,211 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { useQuery, useMutation } from '@apollo/client'
+import { gql, useMutation } from '@apollo/client'
 
 import ErrorQuery from '../components/ErrorQuery'
 import CenterContent from '../components/CenterContent'
-import { QUERY_NEURAL_NETWORK } from '../routes/CardNeuralNetwork'
 import { INSERT_MODEL_SAMPLE } from '../routes/InsertModelSample'
-import { UPDATE_MODEL_SAMPLE } from '../routes/UpdateModelSample'
-import { TRAIN_NEURAL_NETWORK } from '../components/TrainNeuralNetwork'
 
-import { Space, Card, Col, Spin, Button } from 'antd'
+import { Space, Card, Col, Button, Alert } from 'antd'
 
 const neuralnetworkId = '62ae4da63976c4a5dfbbab9f'
 const samplingclientId = '62ae59ca3976c4a5dfbbabff'
 
+const FIELDS_NEURAL_NETWORK = `
+  id
+  name
+  apiKey
+  modelSamples {
+    id
+    input
+    output
+  }
+  memoryNeuralNetwork {
+    trainingMs
+  }
+`
+
+const DISABLE_MODEL_SAMPLES = gql`
+  mutation disableModelSamplesMutation ($disableModelSamplesInput: DisableModelSamplesInput!) {
+    disableModelSamples (disableModelSamplesInput: $disableModelSamplesInput) {
+      ${FIELDS_NEURAL_NETWORK}
+    }
+  }
+`
+
+const TRAIN_NEURAL_NETWORK = gql`
+  mutation trainNeuralNetworkMutation ($trainNeuralNetworkInput: TrainNeuralNetworkInput!) {
+    trainNeuralNetwork (trainNeuralNetworkInput: $trainNeuralNetworkInput) {
+      ${FIELDS_NEURAL_NETWORK}
+    }
+  }
+`
+
+const StatusBanner = ({ type = 'default', message = 'unknown', description }) => {
+  return (
+    <Alert
+      key={message}
+      banner
+      type={type}
+      message={message}
+      description={description}
+    />
+  )
+}
+
+const PiAi = () => {
+  const canvasRef = useRef(null)
+  const returnCurrentDimensions = canvasRef => {
+    const canvas = canvasRef.current
+    const width = window.innerWidth * 2
+    const height = window.innerHeight * 2
+    canvas.width = width
+    canvas.height = height
+    canvas.style.width = '100%'
+    canvas.style.height = '100%'
+    return { width, height }
+  }
+
+  // const contextRef = useRef(null)
+
+  // canvas
+  const [dimensions, setDimensions] = useState()
+  const [resized, setResized] = useState(false)
+
+  // logic
+  const [trained, setTrained] = useState()
+  const [neuralNetwork, setNeuralnetwork] = useState()
+
+  const [disableModelSamplesMutation, { loading: disableModelSamplesLoading, error: disableModelSamplesError }] = useMutation(DISABLE_MODEL_SAMPLES)
+  const [trainNeuralNetworkMutation, { loading: trainNeuralNetworkLoading, error: trainNeuralNetworkError }] = useMutation(TRAIN_NEURAL_NETWORK)
+  const [insertModelSampleMutation, { loading: insertModelSampleLoading, error: insertModelSampleError }] = useMutation(INSERT_MODEL_SAMPLE)
+
+  // CANVAS ON LOAD
+  useEffect(() => {
+    if (!dimensions) {
+      const currentDimensions = returnCurrentDimensions(canvasRef)
+      return setDimensions(currentDimensions)
+    }
+  }, [dimensions, returnCurrentDimensions, setDimensions])
+
+  useEffect(() => {
+    if (neuralNetwork) return setResized(false)
+  }, [neuralNetwork, setResized])
+
+  // init setup training, reuabe if resized
+  useEffect(async () => {
+    if (!dimensions) return setTrained(false)
+
+    if (trained) return
+
+    const disableModelSamplesData = await disableModelSamplesMutation({
+      variables: {
+        disableModelSamplesInput: { neuralnetworkId }
+      }
+    })
+
+    if (!disableModelSamplesData?.data?.disableModelSamples) return
+
+    const { apiKey } = disableModelSamplesData.data.disableModelSamples
+    const insertCredentials = { apiKey, samplingclientId }
+
+    await Promise.all(
+      returnTrainingSamples(dimensions).map(async sample => {
+        await insertModelSampleMutation({
+          variables: {
+            insertModelSampleInput: { ...sample, ...insertCredentials }
+          }
+        })
+      })
+    )
+
+    const trainedNeuralnetwork = await trainNeuralNetworkMutation({
+      variables: {
+        trainNeuralNetworkInput: { neuralnetworkId }
+      }
+    })
+
+    if (!trainedNeuralnetwork?.data?.trainNeuralNetwork) return
+
+    setNeuralnetwork(trainedNeuralnetwork.data.trainNeuralNetwork)
+    return setTrained(true)
+  }, [dimensions, trained, disableModelSamplesMutation, returnTrainingSamples, setNeuralnetwork])
+
+  window.addEventListener('resize', () => setResized(true))
+
+  if (disableModelSamplesError) return <ErrorQuery error={disableModelSamplesError} />
+  if (insertModelSampleError) return <ErrorQuery error={insertModelSampleError} />
+  if (trainNeuralNetworkError) return <ErrorQuery error={trainNeuralNetworkError} />
+
+  return (
+    <CenterContent>
+      <Space direction='vertical'>
+        <Card
+          title={<Col>Network: {neuralNetwork?.name}</Col>}
+          extra={<Col>Samples: {neuralNetwork?.modelSamples?.length}</Col>}
+        >
+
+          {resized && <StatusBanner type='error' message='Canvas resize broke experiment' />}
+          {!resized && <StatusBanner showIcon='true' type='warning' message='Do not resize canvas' description='Experiment is trained with { x, y } points from 4 corners and center of Canvas2D.' />}
+
+          {!dimensions && <StatusBanner type='info' message='Canvas loading...' />}
+          {dimensions && <StatusBanner type='success' message='Canvas loaded.' />}
+
+          {disableModelSamplesLoading && <StatusBanner type='info' message='Disabling existing model samples...' />}
+          {insertModelSampleLoading && <StatusBanner type='info' message='Inserting canvas dependent training samples...' />}
+          {trainNeuralNetworkLoading && <StatusBanner type='info' message='Training model...' />}
+
+          {!trained && <StatusBanner type='success' message='Model requires training.' />}
+          {trained && <StatusBanner type='success' message='Model training complete.' />}
+
+          {!neuralNetwork && <StatusBanner type='info' message='Neural Network loading...' />}
+          {neuralNetwork && <StatusBanner type='success' message='Neural Network loaded.' />}
+
+        </Card>
+
+        {resized && <Button size='small' danger onClick={() => setDimensions(false)}>Retrain Model</Button>}
+
+        {
+          !resized &&
+            <Card
+              title='Training'
+              extra='extra'
+            >
+              <Space direction='vertical' size='small' align='center'>
+
+                <Button size='small'>Request Prediction</Button>
+
+              </Space>
+            </Card>
+        }
+        <Card
+          title='Canvas2D'
+          extra='extra'
+        >
+          <Space direction='vertical' size='small' align='center'>
+
+            {dimensions?.width}
+
+            <Space size='small'>
+              {dimensions?.height}
+
+              <canvas
+                ref={canvasRef}
+                style={style}
+              />
+
+            </Space>
+
+          </Space>
+        </Card>
+
+      </Space>
+    </CenterContent>
+  )
+}
+
+export default PiAi
+
+// 3.14 x 7.62^2 x 3.048 = 150 m3
 const style = {
   width: '100%',
   border: '1px solid black',
@@ -55,155 +248,12 @@ const returnTrainingSamples = ({ width, height }) => {
   return samples
 }
 
-const PiAi = () => {
-  const canvasRef = useRef(null)
-  // const contextRef = useRef(null)
-
-  const [dimensions, setDimensions] = useState()
-  const [neuralNetwork, setNeuralnetwork] = useState()
-
-  const {
-    data: queryNeuralNetworkData,
-    loading: queryNeuralNetworkLoading,
-    error: queryNeuralNetworkError,
-    refetch: queryNeuralNetworkRefetch
-  } = useQuery(QUERY_NEURAL_NETWORK, { variables: { queryNeuralNetworkInput: { neuralnetworkId } } })
-
-  // set dimensions after canvas loads
-  useEffect(() => {
-    const canvas = canvasRef.current
-    const width = window.innerWidth * 2
-    const height = window.innerHeight * 2
-    canvas.width = width
-    canvas.height = height
-    canvas.style.width = '100%'
-    canvas.style.height = '100%'
-    return setDimensions({ width, height })
-  }, [setDimensions])
-
-  const [insertModelSampleMutation, { loading: insertModelSampleLoading, error: insertModelSampleError }] = useMutation(INSERT_MODEL_SAMPLE)
-  const [updateModelSampleMutation, { loading: updateModelSampleLoading, error: updateModelSampleError }] = useMutation(UPDATE_MODEL_SAMPLE)
-  const [trainNeuralNetworkMutation, { loading: trainNeuralNetworkLoading, error: trainNeuralNetworkError }] = useMutation(TRAIN_NEURAL_NETWORK)
-
-  // SETUP
-  useEffect(async () => {
-    if (neuralNetwork) return queryNeuralNetworkRefetch()
-    if (!dimensions) return
-    if (!queryNeuralNetworkData?.neuralNetwork) return
-
-    const { apiKey, modelSamples } = queryNeuralNetworkData.neuralNetwork
-    const insertCredentials = { apiKey, samplingclientId }
-
-    await Promise.all(
-      modelSamples.map(async sample => {
-        const { id: modelsampleId, input, output, enabled } = sample
-
-        enabled && await updateModelSampleMutation({
-          variables: {
-            updateModelSampleInput: { modelsampleId, input, output, enabled: false }
-          }
-        })
-      })
-    )
-
-    await Promise.all(
-      returnTrainingSamples(dimensions).map(async sample => {
-        await insertModelSampleMutation({
-          variables: {
-            insertModelSampleInput: { ...sample, ...insertCredentials }
-          }
-        })
-      })
-    )
-
-    await trainNeuralNetworkMutation({
-      variables: {
-        trainNeuralNetworkInput: { neuralnetworkId }
-      }
-    })
-
-    return setNeuralnetwork(queryNeuralNetworkData.neuralNetwork)
-  }, [queryNeuralNetworkData, dimensions, neuralNetwork, setNeuralnetwork, queryNeuralNetworkRefetch])
-
-  useEffect(() => {
-    if (neuralNetwork) console.log('neuralNetwork', neuralNetwork)
-  }, [neuralNetwork])
-
-  // const mouseDown = ({ nativeEvent }) => {
-  //   const { offsetX, offsetY } = nativeEvent
-  //   const { current } = contextRef
-  //
-  //   current.strokeStyle = returnHue(hue)
-  //   current.beginPath()
-  //   current.moveTo(offsetX, offsetY)
-  //   setIsDrawing(true)
-  // }
-
-  if (queryNeuralNetworkError) return <ErrorQuery error={queryNeuralNetworkError} />
-  if (insertModelSampleError) return <ErrorQuery error={insertModelSampleError} />
-  if (updateModelSampleError) return <ErrorQuery error={updateModelSampleError} />
-  if (trainNeuralNetworkError) return <ErrorQuery error={trainNeuralNetworkError} />
-
-  return (
-    <CenterContent>
-      <Space direction='vertical'>
-        <Card
-          title={<Col>Network: {queryNeuralNetworkData?.neuralNetwork?.name}</Col>}
-          extra={<Col>Samples: {queryNeuralNetworkData?.neuralNetwork?.modelSize}</Col>}
-        >
-          <Space
-            direction='vertical'
-            size='small'
-            loading={queryNeuralNetworkLoading.toString()}
-          >
-            <Col>
-              SETUP:
-              {' '}
-              {!neuralNetwork && <Spin size='small' />}
-              {' '}
-              {!dimensions && 'Loading dimensions'}
-              {updateModelSampleLoading && 'Disabling exisitng samples'}
-              {insertModelSampleLoading && 'Inserting training samples'}
-              {neuralNetwork && 'Ready'}
-            </Col>
-
-            <Col>
-              Model:
-              {' '}
-              {!neuralNetwork?.memoryNeuralNetwork && 'Untrained'}
-              {neuralNetwork?.memoryNeuralNetwork?.trainingMs && `Training time: ${neuralNetwork.memoryNeuralNetwork.trainingMs} ms`}
-
-              {trainNeuralNetworkLoading && <Spin size='small' />}
-              {' '}
-              {trainNeuralNetworkLoading && 'Training..'}
-            </Col>
-
-
-          </Space>
-        </Card>
-
-        <Card
-          title='Canvas 2d'
-        >
-          <Space direction='vertical' size='small' align='center'>
-
-            {dimensions?.width}
-
-            <Space size='small'>
-              {dimensions?.height}
-
-              <canvas
-                ref={canvasRef}
-                style={style}
-              />
-
-            </Space>
-
-          </Space>
-        </Card>
-      </Space>
-    </CenterContent>
-  )
-}
-
-export default PiAi
+// const mouseDown = ({ nativeEvent }) => {
+//   const { offsetX, offsetY } = nativeEvent
+//   const { current } = contextRef
+//
+//   current.strokeStyle = returnHue(hue)
+//   current.beginPath()
+//   current.moveTo(offsetX, offsetY)
+//   setIsDrawing(true)
+// }
