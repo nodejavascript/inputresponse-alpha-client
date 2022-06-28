@@ -2,7 +2,7 @@ import React from 'react'
 
 import CoreCodeComment from '../components/CoreCodeComment'
 import NetworkDiagramSVG from '../components/NetworkDiagramSVG'
-import { PredictionFirstGuess } from '../routes/ListModelPredictions'
+import PredictionFirstGuess from '../components/PredictionFirstGuess'
 
 import { Space, Alert } from 'antd'
 

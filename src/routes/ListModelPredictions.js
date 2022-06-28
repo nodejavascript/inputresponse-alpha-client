@@ -5,14 +5,7 @@ import { CORE_QUERY_FIELDS } from '../lib'
 
 import CoreTable from '../components/CoreTable'
 import CoreCodeComment from '../components/CoreCodeComment'
-import CellFormat from '../components/table/CellFormat'
-
-export const PredictionFirstGuess = ({ record }) => (
-  <CellFormat
-    topRow={<>guess {record?.guesses[0]?.guess}</>}
-    bottomRow={<>confidence {record?.guesses[0]?.confidence}</>}
-  />
-)
+import PredictionFirstGuess from '../components/PredictionFirstGuess'
 
 const QUERY_MODEL_PREDICTIONS = gql`
   query queryModelPredictions {

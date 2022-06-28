@@ -3,7 +3,10 @@ import { gql, useMutation } from '@apollo/client'
 
 import ErrorQuery from '../components/ErrorQuery'
 import CoreCodeComment from '../components/CoreCodeComment'
+import PredictionFirstGuess from '../components/PredictionFirstGuess'
+
 import { INSERT_MODEL_SAMPLE } from '../routes/InsertModelSample'
+import { CORE_QUERY_FIELDS } from '../lib'
 
 import { Space, Card, Col, Button, Alert, Typography } from 'antd'
 
@@ -45,9 +48,25 @@ const TRAIN_NEURAL_NETWORK = gql`
 const INSERT_MODEL_PREDICTION = gql`
   mutation insertModelPredictionMutation ($insertModelPredictionInput: InsertModelPredictionInput!) {
     insertModelPrediction (insertModelPredictionInput: $insertModelPredictionInput) {
-      diagram
-      likely
-      guess
+
+      ${CORE_QUERY_FIELDS}
+
+      samplingclientId
+      input: inputDisplay
+
+      guesses {
+        guess
+        confidence
+      }
+
+      neuralNetwork {
+        id
+        name
+      }
+      samplingClient {
+        id
+        name
+      }
     }
   }
 `
@@ -65,7 +84,24 @@ const StatusBanner = ({ type = 'default', message = 'unknown', description }) =>
 }
 
 const PiAi = () => {
+  const [dimensions, setDimensions] = useState()
+  const [resized, setResized] = useState(false)
+
+  // logic
+  const [trained, setTrained] = useState()
+  const [neuralNetwork, setNeuralnetwork] = useState()
+
+  const [input, setInput] = useState()
+
+  const [disableModelSamplesMutation, { loading: disableModelSamplesLoading, error: disableModelSamplesError }] = useMutation(DISABLE_MODEL_SAMPLES)
+  const [trainNeuralNetworkMutation, { loading: trainNeuralNetworkLoading, error: trainNeuralNetworkError }] = useMutation(TRAIN_NEURAL_NETWORK)
+  const [insertModelSampleMutation, { loading: insertModelSampleLoading, error: insertModelSampleError }] = useMutation(INSERT_MODEL_SAMPLE)
+
+  const anythingLoading = disableModelSamplesLoading || trainNeuralNetworkLoading || insertModelSampleLoading
+
   const canvasRef = useRef(null)
+  const contextRef = useRef(null)
+
   const returnCurrentDimensions = canvasRef => {
     const canvas = canvasRef.current
     const width = window.innerWidth * 2
@@ -74,24 +110,25 @@ const PiAi = () => {
     canvas.height = height
     canvas.style.width = '100%'
     canvas.style.height = '100%'
+
+    const context = canvas.getContext('2d')
+    context.lineCap = 'butt'
+    context.strokeStyle = 'black'
+    context.lineWidth = 2
+    contextRef.current = context
+
     return { width, height }
   }
 
-  // const contextRef = useRef(null)
-
-  // canvas
-  const [dimensions, setDimensions] = useState()
-  const [resized, setResized] = useState(false)
-
-  // logic
-  const [trained, setTrained] = useState()
-  const [neuralNetwork, setNeuralnetwork] = useState()
-
-  const [disableModelSamplesMutation, { loading: disableModelSamplesLoading, error: disableModelSamplesError }] = useMutation(DISABLE_MODEL_SAMPLES)
-  const [trainNeuralNetworkMutation, { loading: trainNeuralNetworkLoading, error: trainNeuralNetworkError }] = useMutation(TRAIN_NEURAL_NETWORK)
-  const [insertModelSampleMutation, { loading: insertModelSampleLoading, error: insertModelSampleError }] = useMutation(INSERT_MODEL_SAMPLE)
-
-  const anythingLoading = disableModelSamplesLoading || trainNeuralNetworkLoading || insertModelSampleLoading
+  const drawDot = ({ x, y, size = 10, color = 'black' }) => {
+    const { current } = contextRef
+    current.beginPath()
+    current.strokeStyle = color
+    current.fillStyle = color
+    current.arc(x, y, size, 0, 2 * Math.PI)
+    current.fill()
+    current.stroke()
+  }
 
   // CANVAS ON LOAD
   useEffect(() => {
@@ -124,6 +161,8 @@ const PiAi = () => {
 
     await Promise.all(
       returnTrainingSamples(dimensions).map(async sample => {
+        const { input } = sample
+        drawDot({ ...input, color: 'purple' })
         await insertModelSampleMutation({
           variables: {
             insertModelSampleInput: { ...sample, ...insertCredentials }
@@ -143,6 +182,11 @@ const PiAi = () => {
     setNeuralnetwork(trainedNeuralnetwork.data.trainNeuralNetwork)
     return setTrained(true)
   }, [dimensions, trained, disableModelSamplesMutation, returnTrainingSamples, setNeuralnetwork])
+
+  useEffect(() => {
+    if (!input) return
+    return drawDot(input)
+  }, [input, drawDot])
 
   window.addEventListener('resize', () => setResized(true))
 
@@ -174,6 +218,8 @@ const PiAi = () => {
         dimensions={dimensions}
         apiKey={neuralNetwork?.apiKey}
         trained={trained}
+        input={input}
+        setInput={setInput}
       />
 
       <Canvas2D
@@ -187,15 +233,14 @@ const PiAi = () => {
 }
 
 export default PiAi
-const ControlPanel = ({ resized, dimensions, apiKey, trained }) => {
-  const [input, setInput] = useState()
+
+const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput }) => {
   const [modelPrediction, setModelPrediction] = useState()
 
   const [insertModelPredictionMutation, { data: insertModelPredictionData, loading: insertModelPredictionLoading, error: insertModelPredictionError }] = useMutation(INSERT_MODEL_PREDICTION)
 
   useEffect(() => {
-    console.log('insertModelPredictionData', insertModelPredictionData)
-
+    if (insertModelPredictionData?.insertModelPrediction) return setModelPrediction(insertModelPredictionData.insertModelPrediction)
   }, [insertModelPredictionData])
 
   if (resized || !dimensions) return null
@@ -208,7 +253,6 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained }) => {
     const y = Math.random() * height
     return { x, y }
   }
-
   return (
     <Card
       loading={!trained}
@@ -220,6 +264,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained }) => {
         {!input && <StatusBanner type='info' message='Need random coordinates.' />}
         <Button
           size='small'
+          type='primary'
           onClick={() => {
             const coords = returnRandomCoordinates(dimensions)
             return setInput(coords)
@@ -227,12 +272,14 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained }) => {
         >
           Request random coordinates
         </Button>
+
         {input && <StatusBanner type='success' message='Random coordinates' description={<CoreCodeComment code={JSON.stringify(input)} />} />}
 
         {
           input &&
             <>
               {!modelPrediction && <StatusBanner type='info' message='Get prediction from model.' />}
+
               <Button
                 size='small'
                 loading={insertModelPredictionLoading}
@@ -244,11 +291,23 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained }) => {
               >
                 Request prediction
               </Button>
-              {modelPrediction && <StatusBanner type='success' message='Prediction' description={<CoreCodeComment code={JSON.stringify(modelPrediction)} />} />}
+              {
+                  modelPrediction &&
+                    <StatusBanner
+                      type='success'
+                      message='Prediction'
+                      description={
+                        (
+                          <>
+                            <Space>input: <CoreCodeComment code={modelPrediction?.input} /></Space>
+                            <PredictionFirstGuess record={modelPrediction} />
+                          </>
+                        )
+                      }
+                    />
+              }
             </>
         }
-
-        {modelPrediction && <Button size='small' onClick={() => console.log('Request Prediction')}>Add prediction to model fitness</Button>}
 
       </Space>
 
@@ -359,13 +418,3 @@ const returnTrainingSamples = ({ width, height }) => {
 
   return samples
 }
-
-// const mouseDown = ({ nativeEvent }) => {
-//   const { offsetX, offsetY } = nativeEvent
-//   const { current } = contextRef
-//
-//   current.strokeStyle = returnHue(hue)
-//   current.beginPath()
-//   current.moveTo(offsetX, offsetY)
-//   setIsDrawing(true)
-// }
