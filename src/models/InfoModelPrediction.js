@@ -28,8 +28,9 @@ const InfoModelPrediction = ({ record }) => {
 
             <Space>input: <CoreCodeComment code={record?.input} /></Space>
 
-            <Space>predictionMs: {record?.predictionMs}</Space>
+            <Space>prediction time: {record?.predictionMs} ms</Space>
             <Space>likely: {record?.likely}</Space>
+
             <PredictionFirstGuess record={record} />
             <NetworkDiagramSVG record={record} />
           </>
