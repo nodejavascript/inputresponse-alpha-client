@@ -2,10 +2,12 @@ import React, { useRef, useEffect, useState } from 'react'
 import { gql, useMutation } from '@apollo/client'
 
 import ErrorQuery from '../components/ErrorQuery'
-import CenterContent from '../components/CenterContent'
+import CoreCodeComment from '../components/CoreCodeComment'
 import { INSERT_MODEL_SAMPLE } from '../routes/InsertModelSample'
 
-import { Space, Card, Col, Button, Alert } from 'antd'
+import { Space, Card, Col, Button, Alert, Typography } from 'antd'
+
+const { Text } = Typography
 
 const neuralnetworkId = '62ae4da63976c4a5dfbbab9f'
 const samplingclientId = '62ae59ca3976c4a5dfbbabff'
@@ -36,6 +38,16 @@ const TRAIN_NEURAL_NETWORK = gql`
   mutation trainNeuralNetworkMutation ($trainNeuralNetworkInput: TrainNeuralNetworkInput!) {
     trainNeuralNetwork (trainNeuralNetworkInput: $trainNeuralNetworkInput) {
       ${FIELDS_NEURAL_NETWORK}
+    }
+  }
+`
+
+const INSERT_MODEL_PREDICTION = gql`
+  mutation insertModelPredictionMutation ($insertModelPredictionInput: InsertModelPredictionInput!) {
+    insertModelPrediction (insertModelPredictionInput: $insertModelPredictionInput) {
+      diagram
+      likely
+      guess
     }
   }
 `
@@ -78,6 +90,8 @@ const PiAi = () => {
   const [disableModelSamplesMutation, { loading: disableModelSamplesLoading, error: disableModelSamplesError }] = useMutation(DISABLE_MODEL_SAMPLES)
   const [trainNeuralNetworkMutation, { loading: trainNeuralNetworkLoading, error: trainNeuralNetworkError }] = useMutation(TRAIN_NEURAL_NETWORK)
   const [insertModelSampleMutation, { loading: insertModelSampleLoading, error: insertModelSampleError }] = useMutation(INSERT_MODEL_SAMPLE)
+
+  const anythingLoading = disableModelSamplesLoading || trainNeuralNetworkLoading || insertModelSampleLoading
 
   // CANVAS ON LOAD
   useEffect(() => {
@@ -137,73 +151,171 @@ const PiAi = () => {
   if (trainNeuralNetworkError) return <ErrorQuery error={trainNeuralNetworkError} />
 
   return (
-    <CenterContent>
-      <Space direction='vertical'>
-        <Card
-          title={<Col>Network: {neuralNetwork?.name}</Col>}
-          extra={<Col>Samples: {neuralNetwork?.modelSamples?.length}</Col>}
-        >
+    <Space direction='vertical' style={{ width: '100%' }}>
 
-          {resized && <StatusBanner type='error' message='Canvas resize broke experiment' />}
-          {!resized && <StatusBanner showIcon='true' type='warning' message='Do not resize canvas' description='Experiment is trained with { x, y } points from 4 corners and center of Canvas2D.' />}
+      <Statuses
+        resized={resized}
+        neuralNetwork={neuralNetwork}
+        dimensions={dimensions}
+        disableModelSamplesLoading={disableModelSamplesLoading}
+        insertModelSampleLoading={insertModelSampleLoading}
+        trainNeuralNetworkLoading={trainNeuralNetworkLoading}
+        trained={trained}
+      />
 
-          {!dimensions && <StatusBanner type='info' message='Canvas loading...' />}
-          {dimensions && <StatusBanner type='success' message='Canvas loaded.' />}
+      <ResizeAlarm
+        resized={resized}
+        setDimensions={setDimensions}
+        anythingLoading={anythingLoading}
+      />
 
-          {disableModelSamplesLoading && <StatusBanner type='info' message='Disabling existing model samples...' />}
-          {insertModelSampleLoading && <StatusBanner type='info' message='Inserting canvas dependent training samples...' />}
-          {trainNeuralNetworkLoading && <StatusBanner type='info' message='Training model...' />}
+      <ControlPanel
+        resized={resized}
+        dimensions={dimensions}
+        apiKey={neuralNetwork?.apiKey}
+        trained={trained}
+      />
 
-          {!trained && <StatusBanner type='success' message='Model requires training.' />}
-          {trained && <StatusBanner type='success' message='Model training complete.' />}
+      <Canvas2D
+        resized={resized}
+        canvasRef={canvasRef}
+        dimensions={dimensions}
+      />
 
-          {!neuralNetwork && <StatusBanner type='info' message='Neural Network loading...' />}
-          {neuralNetwork && <StatusBanner type='success' message='Neural Network loaded.' />}
-
-        </Card>
-
-        {resized && <Button size='small' danger onClick={() => setDimensions(false)}>Retrain Model</Button>}
-
-        {
-          !resized &&
-            <Card
-              title='Training'
-              extra='extra'
-            >
-              <Space direction='vertical' size='small' align='center'>
-
-                <Button size='small'>Request Prediction</Button>
-
-              </Space>
-            </Card>
-        }
-        <Card
-          title='Canvas2D'
-          extra='extra'
-        >
-          <Space direction='vertical' size='small' align='center'>
-
-            {dimensions?.width}
-
-            <Space size='small'>
-              {dimensions?.height}
-
-              <canvas
-                ref={canvasRef}
-                style={style}
-              />
-
-            </Space>
-
-          </Space>
-        </Card>
-
-      </Space>
-    </CenterContent>
+    </Space>
   )
 }
 
 export default PiAi
+const ControlPanel = ({ resized, dimensions, apiKey, trained }) => {
+  const [input, setInput] = useState()
+  const [modelPrediction, setModelPrediction] = useState()
+
+  const [insertModelPredictionMutation, { data: insertModelPredictionData, loading: insertModelPredictionLoading, error: insertModelPredictionError }] = useMutation(INSERT_MODEL_PREDICTION)
+
+  useEffect(() => {
+    console.log('insertModelPredictionData', insertModelPredictionData)
+
+  }, [insertModelPredictionData])
+
+  if (resized || !dimensions) return null
+
+  if (insertModelPredictionError) return <ErrorQuery error={insertModelPredictionError} />
+
+  const returnRandomCoordinates = dimensions => {
+    const { width, height } = dimensions
+    const x = Math.random() * width
+    const y = Math.random() * height
+    return { x, y }
+  }
+
+  return (
+    <Card
+      loading={!trained}
+      title='ControlPanel'
+      extra={<StatusBanner type='success' message={<CoreCodeComment code={JSON.stringify(dimensions)} />} />}
+    >
+      <Space direction='vertical' style={{ width: '100%' }}>
+
+        {!input && <StatusBanner type='info' message='Need random coordinates.' />}
+        <Button
+          size='small'
+          onClick={() => {
+            const coords = returnRandomCoordinates(dimensions)
+            return setInput(coords)
+          }}
+        >
+          Request random coordinates
+        </Button>
+        {input && <StatusBanner type='success' message='Random coordinates' description={<CoreCodeComment code={JSON.stringify(input)} />} />}
+
+        {
+          input &&
+            <>
+              {!modelPrediction && <StatusBanner type='info' message='Get prediction from model.' />}
+              <Button
+                size='small'
+                loading={insertModelPredictionLoading}
+                onClick={() => insertModelPredictionMutation({
+                  variables: {
+                    insertModelPredictionInput: { apiKey, samplingclientId, input }
+                  }
+                })}
+              >
+                Request prediction
+              </Button>
+              {modelPrediction && <StatusBanner type='success' message='Prediction' description={<CoreCodeComment code={JSON.stringify(modelPrediction)} />} />}
+            </>
+        }
+
+        {modelPrediction && <Button size='small' onClick={() => console.log('Request Prediction')}>Add prediction to model fitness</Button>}
+
+      </Space>
+
+    </Card>
+  )
+}
+
+const Statuses = ({ neuralNetwork, resized, dimensions, disableModelSamplesLoading, insertModelSampleLoading, trainNeuralNetworkLoading, trained }) => {
+  return (
+    <>
+      <Card title='The PiAi Experiment' extra='Status'>
+        Train a Neural network with the center and the 4 corners of a canvas. Plot it's guesses as you train. Predictions will be colorized and a circle will begin to be dotted. AI will infer Pi.
+      </Card>
+
+      <Card
+        title={<Col>Network: {neuralNetwork?.name}</Col>}
+        extra='Status'
+      >
+        {resized && <StatusBanner type='error' message='Canvas resize broke experiment' />}
+
+        {!dimensions && <StatusBanner type='info' message='Canvas loading...' />}
+        {dimensions && <StatusBanner type='success' message='Canvas loaded.' />}
+
+        {disableModelSamplesLoading && <StatusBanner type='info' message='Disabling existing model samples...' />}
+        {insertModelSampleLoading && <StatusBanner type='info' message='Inserting canvas dependent training samples...' />}
+        {trainNeuralNetworkLoading && <StatusBanner type='info' message='Training model...' />}
+
+        {!trained && <StatusBanner type='success' message='Model requires training.' />}
+        {trained && <StatusBanner type='success' message='Model training complete.' />}
+
+        {!neuralNetwork && <StatusBanner type='info' message='Neural Network loading...' />}
+        {neuralNetwork && <StatusBanner type='success' message='Neural Network loaded.' />}
+      </Card>
+    </>
+  )
+}
+
+const ResizeAlarm = ({ resized, setDimensions }) => {
+  if (!resized) return <StatusBanner showIcon='true' type='warning' message='Do not resize canvas' description='Experiment is trained with { x, y } points from Canvas2D.' />
+  return <Button size='small' danger onClick={() => setDimensions(false)}>Retrain Model</Button>
+}
+
+const Canvas2D = ({ canvasRef, dimensions, resized }) => {
+  const type = resized && 'danger'
+  return (
+    <Card
+      title='Canvas2D'
+      extra='extra'
+    >
+      <Space direction='vertical' size='small' align='center'>
+
+        <Text type={type}>{dimensions?.width} px</Text>
+
+        <Space size='small'>
+          <Text type={type}>{dimensions?.height} px</Text>
+
+          <canvas
+            ref={canvasRef}
+            style={style}
+          />
+
+        </Space>
+
+      </Space>
+    </Card>
+  )
+}
 
 // 3.14 x 7.62^2 x 3.048 = 150 m3
 const style = {

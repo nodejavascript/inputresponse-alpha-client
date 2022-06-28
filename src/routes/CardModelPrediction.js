@@ -16,7 +16,15 @@ export const QUERY_MODEL_PREDICTION = gql`
       neuralnetworkId
       samplingclientId
       input: inputDisplay
-      output: outputDisplay
+
+      predictionMs
+
+      diagram
+      likely
+      guesses {
+        guess
+        confidence
+      }
 
       neuralNetwork {
         ${CORE_QUERY_FIELDS}

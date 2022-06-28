@@ -10,7 +10,7 @@ import { Form, Input, Switch, Button, Card, Space } from 'antd'
 
 const defaultValues = { enabled: true }
 
-const CoreForm = ({ children, queryLoading, queryError, record, form, loading, error, paths, onFinish, hideTitle }) => {
+const CoreForm = ({ children, queryLoading, queryError, info, record, form, loading, error, paths, onFinish, hideTitle }) => {
   const initialValues = { ...defaultValues, ...record }
 
   if (queryError) return <ErrorQuery error={queryError} />
@@ -26,15 +26,18 @@ const CoreForm = ({ children, queryLoading, queryError, record, form, loading, e
         initialValues={initialValues}
         onFinish={values => onFinish(values)}
       >
+        <Space direction='vertical' style={{ width: '100%' }}>
+          {info}
 
-        {
-          children?.props && (
-            <>
-              <CoreCodeComment level={4} code='settings:' />
-              {children}
-            </>
-          )
-        }
+          {
+            children?.props && (
+              <>
+                <CoreCodeComment level={4} code='settings:' />
+                {children}
+              </>
+            )
+          }
+        </Space>
 
         <CoreCodeComment level={4} code='form:' />
 
@@ -91,6 +94,8 @@ const CoreForm = ({ children, queryLoading, queryError, record, form, loading, e
         </Form.Item>
 
         <ErrorMessage error={error} />
+
+
 
       </Form>
     </Card>

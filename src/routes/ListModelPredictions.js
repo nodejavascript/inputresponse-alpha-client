@@ -4,6 +4,15 @@ import { gql, useQuery } from '@apollo/client'
 import { CORE_QUERY_FIELDS } from '../lib'
 
 import CoreTable from '../components/CoreTable'
+import CoreCodeComment from '../components/CoreCodeComment'
+import CellFormat from '../components/table/CellFormat'
+
+export const PredictionFirstGuess = ({ record }) => (
+  <CellFormat
+    topRow={<>guess {record?.guesses[0]?.guess}</>}
+    bottomRow={<>confidence {record?.guesses[0]?.confidence}</>}
+  />
+)
 
 const QUERY_MODEL_PREDICTIONS = gql`
   query queryModelPredictions {
@@ -12,7 +21,12 @@ const QUERY_MODEL_PREDICTIONS = gql`
 
       samplingclientId
       input: inputDisplay
-      output: outputDisplay
+
+      guesses {
+        guess
+        confidence
+      }
+
       neuralNetwork {
         id
         name
@@ -43,13 +57,13 @@ const ListModelPredictions = ({ paths }) => {
     {
       title: 'input',
       key: 'input',
-      dataIndex: 'input',
+      render: record => <CoreCodeComment code={record?.input} />,
       sorter: (a, b) => a?.input && a.input.localeCompare(b.input)
     },
     {
-      title: 'output',
-      key: 'output',
-      dataIndex: 'output',
+      title: 'guess',
+      key: 'guess',
+      render: record => <PredictionFirstGuess record={record} />,
       sorter: (a, b) => a?.output && a.output.localeCompare(b.output)
     }
   ]

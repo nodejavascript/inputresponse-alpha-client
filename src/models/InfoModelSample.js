@@ -1,6 +1,7 @@
 import React from 'react'
 
 import CoreCodeComment from '../components/CoreCodeComment'
+
 import { Space } from 'antd'
 
 const InfoModelSample = ({ record }) => {
