@@ -1,3 +1,6 @@
+// https://openbase.com/js/brain.js/documentation
+// https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillText
+
 import React, { useRef, useEffect, useState } from 'react'
 import { gql, useMutation } from '@apollo/client'
 
@@ -119,14 +122,18 @@ const PiAi = () => {
     return { width, height }
   }
 
-  const drawDot = ({ x, y, size = 10, color = 'black' }) => {
+  const drawDot = ({ x, y, size = 10, color = 'black' }, noFill) => {
     const { current } = contextRef
     current.beginPath()
     current.strokeStyle = color
     current.fillStyle = color
     current.arc(x, y, size, 0, 2 * Math.PI)
-    current.fill()
-    current.fillText(`${x} x ${y}`, x - 50, y + 40)
+
+    if (!noFill) {
+      current.fill()
+      current.fillText(`${x} x ${y}`, x - 50, y + 40)
+    }
+
     current.stroke()
     contextRef.current = current
   }
@@ -329,6 +336,8 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
 
                       <StatusBanner type='warning' message={modelPrediction?.guessRounded ? 'AI thinks INSIDE' : 'AI thinks OUTSIDE'} />
 
+                      <CalulatedCorrectness modelPrediction={modelPrediction} dimensions={dimensions} drawDot={drawDot} />
+
                       <Divider />
 
                       <StatusBanner type='info' message='Train model with correct answer.' />
@@ -396,6 +405,33 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
       </Space>
 
     </Card>
+  )
+}
+
+export const CalulatedCorrectness = ({ modelPrediction, dimensions, drawDot }) => {
+  const { input: inputAsString, guessRounded } = modelPrediction
+  const input = JSON.parse(inputAsString)
+
+  const { width, height } = dimensions
+
+  const center = {
+    x: parseInt(width / 2),
+    y: parseInt(height / 2)
+  }
+
+  const shortestRadius = center.x < center.y ? center.x : center.y
+  drawDot({ ...center, size: shortestRadius, color: 'purple' }, true)
+
+  const a = input.x - center.x
+  const b = input.y - center.y
+  const distanceFromCenter = Math.sqrt((a * a) + (b * b))
+  const correctOutput = distanceFromCenter <= shortestRadius ? 1 : 0
+  const aiIsRight = guessRounded === correctOutput
+
+  drawDot({ ...center, size: distanceFromCenter, color: 'blue' }, true)
+
+  return (
+    <StatusBanner type='warning' message={aiIsRight ? 'AI IS RIGHT' : 'AI IS WRONG'} />
   )
 }
 
@@ -502,5 +538,3 @@ const returnTrainingSamples = ({ width, height }) => {
 
   return samples
 }
-
-// https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillText
