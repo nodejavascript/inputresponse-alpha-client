@@ -36,6 +36,9 @@ export const INSERT_MODEL_SAMPLE = gql`
   mutation insertModelSampleMutation ($insertModelSampleInput: InsertModelSampleInput!) {
     insertModelSample (insertModelSampleInput: $insertModelSampleInput) {
       id
+      name
+      input
+      output
     }
   }
 `
