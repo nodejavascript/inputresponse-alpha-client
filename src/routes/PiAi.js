@@ -17,6 +17,8 @@ const { Text } = Typography
 const neuralnetworkId = '62ae4da63976c4a5dfbbab9f'
 const samplingclientId = '62ae59ca3976c4a5dfbbabff'
 
+const backgroundColor = '#fafafa'
+
 const FIELDS_NEURAL_NETWORK = `
   id
   name
@@ -198,10 +200,13 @@ const PiAi = () => {
     const coords = { input }
     const correctness = returnCalulatedCorrectness({ coords, dimensions })
 
-    const { canvasCenter, inputRadius, correctAiOutput } = correctness
+    const { correctAiOutput } = correctness
 
-    drawDot(context, { ...input, size: 30, color: 'black' })
-    drawDot(context, { ...canvasCenter, size: inputRadius, color: 'black', dontfill: true })
+    // if 1, inside cirlce, 0 is outside
+    const color = correctAiOutput ? 'blue' : 'black'
+
+    drawDot(context, { ...input, size: 40, color })
+    // drawDot(context, { ...canvasCenter, size: inputRadius, color, dontfill: true })
     return setCorrectAiOutput(correctAiOutput)
   }, [input, dimensions, drawDot, setCorrectAiOutput])
 
@@ -281,7 +286,7 @@ export default PiAi
 
 const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, insertModelSampleMutation, insertModelSampleLoading, canvasRef, drawDot, correctAiOutput }) => {
   const [modelPrediction, setModelPrediction] = useState()
-  const [correctness, setCorrectness] = useState({ })
+  const [correctness, setCorrectness] = useState()
 
   const [insertModelPredictionMutation, { data: insertModelPredictionData, loading: insertModelPredictionLoading, error: insertModelPredictionError }] = useMutation(INSERT_MODEL_PREDICTION)
 
@@ -293,20 +298,29 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
     if (!modelPrediction) return
 
     const { input, guessRounded } = modelPrediction
-    const coords = { input: JSON.parse(input) }
-    console.log('coords', coords)
+    const coords = { input }
+
     const correctness = returnCalulatedCorrectness({ coords, dimensions, guessRounded })
 
     return setCorrectness(correctness)
   }, [modelPrediction, dimensions, setCorrectness])
 
   useEffect(() => {
-    console.log('correctness', correctness)
-  }, [correctness])
+    if (!correctness) return
 
-  if (resized || !dimensions) return null
+    const canvas = canvasRef.current
+    const context = canvas.getContext('2d')
 
-  if (insertModelPredictionError) return <ErrorQuery error={insertModelPredictionError} />
+    const { input, canvasCenter, inputRadius, isAiCorrect } = correctness
+
+    const color = isAiCorrect ? 'green' : 'red'
+    drawDot(context, { ...input, size: 20, color })
+    drawDot(context, { ...canvasCenter, size: inputRadius, color: backgroundColor, dontfill: true })
+  }, [correctness, canvasRef, drawDot])
+
+  useEffect(() => {
+    if (!input) return setModelPrediction(false)
+  }, [input, setModelPrediction])
 
   const returnRandomCoordinates = dimensions => {
     const { width, height } = dimensions
@@ -315,23 +329,85 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
     return { x, y }
   }
 
+  const runOnce = async (dimensions, setInput, setModelPrediction, insertModelPredictionMutation, insertModelPredictionInput) => {
+    const coords = await setNewCoordsToInput(dimensions, setInput, setModelPrediction)
+
+    const insertModelPrediction = await requestModelPrediction(insertModelPredictionMutation, { ...insertModelPredictionInput, input: coords })
+
+    const autoModelPrediction = insertModelPrediction.data.insertModelPrediction
+    // console.log('modelPrediction', modelPrediction)
+
+    await trainModelWithFitness(dimensions, autoModelPrediction)
+  }
+
+  const setNewCoordsToInput = (dimensions, setInput, setModelPrediction) => {
+    const coords = returnRandomCoordinates(dimensions)
+
+    setInput(coords)
+    setModelPrediction(false)
+    return coords
+  }
+
+  const requestModelPrediction = (insertModelPredictionMutation, insertModelPredictionInput) => {
+    return insertModelPredictionMutation({
+      variables: { insertModelPredictionInput }
+    })
+  }
+
+  const trainModelWithFitness = async (dimensions, modelPrediction) => {
+    const { guessRounded, neuralNetwork, samplingclientId } = modelPrediction
+    const { apiKey } = neuralNetwork
+
+    const input = JSON.parse(modelPrediction.input)
+    console.log('input', input)
+
+    const coords = { input }
+
+    const correctness = returnCalulatedCorrectness({ dimensions, coords, guessRounded })
+
+    const output = [correctness?.correctAiOutput]
+
+    const insertModelSampleInput = { apiKey, samplingclientId, input, output }
+
+    const trained = await insertModelSampleMutation({
+      variables: {
+        insertModelSampleInput
+      }
+    })
+    console.log('trained', trained)
+    return setInput(false)
+  }
+
+  if (resized || !dimensions) return null
+
+  if (insertModelPredictionError) return <ErrorQuery error={insertModelPredictionError} />
+
   return (
     <Card
       loading={!trained}
       title='Control Panel'
+      extra={
+        <Button
+          size='small'
+          shape='round'
+          type='default'
+          onClick={() => runOnce(dimensions, setInput, setModelPrediction, insertModelPredictionMutation, { apiKey, samplingclientId })}
+        >
+          Run Once
+        </Button>
+      }
     >
       <Space direction='vertical' style={{ width: '100%' }}>
 
         <StatusBanner type='success' message='Canvas' description={<CoreCodeComment code={JSON.stringify(dimensions)} />} />
 
-        {!input && <StatusBanner type='info' message='Need random coordinates.' />}
+        {!input && <StatusBanner type='warning' message='Need random coordinates.' />}
+
         <Button
-          size='small'
+          loading={!trained}
+          block
           type={!input ? 'primary' : 'default'}
-          onClick={() => {
-            const coords = returnRandomCoordinates(dimensions)
-            return setInput(coords)
-          }}
+          onClick={() => setNewCoordsToInput(dimensions, setInput, setModelPrediction)}
         >
           Request random coordinates
         </Button>
@@ -339,7 +415,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
         {
           input &&
             <Space direction='vertical' style={{ width: '100%' }}>
-              <StatusBanner type='success' message='Random coordinates plotted:' description={<CoreCodeComment code={JSON.stringify(input)} />} />
+              <StatusBanner type='success' message='Random coordinates plotted.' description={<CoreCodeComment code={JSON.stringify(input)} />} />
 
               <List bordered style={{ padding: 0 }}>
                 <StatusBanner type='info' message={`Dot is ${correctAiOutput ? 'INSIDE' : 'OUTSIDE'} circle.`} />
@@ -350,17 +426,13 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
         {
           input &&
             <>
-              {!modelPrediction && <StatusBanner type='info' message='Get prediction from model.' />}
+              {!modelPrediction && <StatusBanner type='warning' message='Need an AiPi prediction.' />}
 
               <Button
-                size='small'
+                block
                 type={!modelPrediction ? 'primary' : 'default'}
                 loading={insertModelPredictionLoading}
-                onClick={() => insertModelPredictionMutation({
-                  variables: {
-                    insertModelPredictionInput: { apiKey, samplingclientId, input }
-                  }
-                })}
+                onClick={() => requestModelPrediction(insertModelPredictionMutation, { apiKey, samplingclientId, input })}
               >
                 Request prediction
               </Button>
@@ -384,39 +456,25 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
                         }
                       />
 
-                      <List bordered style={{ padding: 0 }}>
-                        <Space direction='vertical' style={{ width: '100%' }}>
-                          <StatusBanner type='warning' message={`AI predicts dot is ${correctness.guessRounded ? 'INSIDE' : 'OUTSIDE'} circle.`} />
-                          <StatusBanner type={correctness.isAiCorrect ? 'success' : 'error'} message={`AI is ${correctness.isAiCorrect ? 'RIGHT' : 'WRONG'} circle.`} />
-                        </Space>
-                      </List>
+                      {
+                        correctness &&
+                          <List bordered style={{ padding: 0 }}>
+                            <Space direction='vertical' style={{ width: '100%' }}>
+                              <StatusBanner type='warning' message={`AI predicts dot is ${correctness.guessRounded ? 'INSIDE' : 'OUTSIDE'} circle.`} />
+                              <StatusBanner type={correctness.isAiCorrect ? 'success' : 'error'} message={`AI is ${correctness.isAiCorrect ? 'RIGHT' : 'WRONG'}.`} />
+                            </Space>
+                          </List>
+                      }
 
-                      <StatusBanner type='success' message='Now, train model with correct answer.' />
+                      <StatusBanner type='success' message='Train neural network.' />
 
                       <Button
-                        size='small'
+                        block
                         type='primary'
                         loading={insertModelSampleLoading}
-                        onClick={async () => {
-                          const { neuralNetwork } = modelPrediction
-                          const input = correctness?.input
-
-                          const sample = {
-                            input,
-                            output: [correctness?.correctAiOutput]
-                          }
-
-                          const { apiKey } = neuralNetwork
-                          const insertCredentials = { apiKey, samplingclientId }
-
-                          await insertModelSampleMutation({
-                            variables: {
-                              insertModelSampleInput: { ...sample, ...insertCredentials }
-                            }
-                          })
-                        }}
+                        onClick={async () => trainModelWithFitness(dimensions, modelPrediction)}
                       >
-                        Train Model to be {correctness?.correctAiOutput ? 'INSIDE' : 'OUTSIDE'}
+                        Train Model that coords belong {correctness?.correctAiOutput ? 'INSIDE' : 'OUTSIDE'} circle
                       </Button>
 
                     </Space>
@@ -504,7 +562,7 @@ const ResizeAlarm = ({ resized, setDimensions }) => {
 
 const style = {
   border: '1px solid black',
-  backgroundColor: '#fafafa'
+  backgroundColor
 }
 
 const Canvas2D = ({ canvasRef, dimensions, resized }) => {
