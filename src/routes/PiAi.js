@@ -256,6 +256,14 @@ const PiAi = () => {
 
       <Space align='top' style={{ width: '100%' }}>
 
+        <Canvas2D
+          resized={resized}
+          canvasRef={canvasRef}
+          dimensions={dimensions}
+          trained={trained}
+          setDimensions={setDimensions}
+        />
+
         <ControlPanel
           resized={resized}
           dimensions={dimensions}
@@ -269,14 +277,6 @@ const PiAi = () => {
           canvasRef={canvasRef}
           drawDot={drawDot}
           correctAiOutput={correctAiOutput}
-        />
-
-        <Canvas2D
-          resized={resized}
-          canvasRef={canvasRef}
-          dimensions={dimensions}
-          trained={trained}
-          setDimensions={setDimensions}
         />
 
       </Space>
@@ -318,7 +318,8 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
     setDisabledTrainingButton(false)
 
     const { input, guessRounded } = modelPrediction
-    const coords = { input }
+
+    const coords = { input: JSON.parse(input) }
 
     const correctness = returnCalulatedCorrectness({ coords, dimensions, guessRounded })
 
@@ -331,8 +332,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
     const canvas = canvasRef.current
     const context = canvas.getContext('2d')
 
-    const { canvasCenter, inputRadius, isAiCorrect } = correctness
-    const input = JSON.parse(correctness.input)
+    const { input, canvasCenter, inputRadius, isAiCorrect } = correctness
 
     const color = isAiCorrect ? 'green' : 'red'
     drawDot(context, { ...input, size: 20, color })
@@ -344,7 +344,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
   }, [input, setModelPrediction])
 
   useEffect(async () => {
-    if (!runningContinuously) return
+    if (!runningContinuously || insertModelSampleLoading) return
     runOnce(setRunning, setInput, setModelPrediction)
   }, [insertModelSampleLoading, runningContinuously, setRunning, setInput, setModelPrediction])
 
@@ -418,7 +418,8 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
             type='default'
             onClick={() => runOnce(setRunning, setInput, setModelPrediction, input)}
           >
-            Run Once
+            {running && <>Running...</>}
+            {!running && <>Run once</>}
           </Button>
 
           <Space>
@@ -467,7 +468,8 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
 
         {
           input &&
-            <>
+
+            <Space direction='vertical' style={{ width: '100%' }}>
               {!modelPrediction && <StatusBanner type='warning' message='Need an AiPi prediction.' />}
 
               <Button
@@ -479,47 +481,43 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
                 Request prediction
               </Button>
 
-              <Space direction='vertical' style={{ width: '100%' }}>
-
-                <StatusBanner
-                  type='success'
-                  message='Prediction'
-                  description={
-                    (
-                      <Space direction='vertical' style={{ width: '100%' }}>
-                        <Space>input: <CoreCodeComment code={modelPrediction?.input} /></Space>
-                        <Space>guessFloat: <CoreCodeComment code={modelPrediction?.guessFloat} /></Space>
-                        <Space>guessRounded: <CoreCodeComment code={modelPrediction?.guessRounded} /></Space>
-                      </Space>
-                    )
-                  }
-                />
-
-                {
-                  correctness &&
-                    <List bordered style={{ padding: 0 }}>
-                      <Space direction='vertical' style={{ width: '100%' }}>
-                        <StatusBanner type='warning' message={`AI predicts dot is ${correctness.guessRounded ? 'INSIDE' : 'OUTSIDE'} circle.`} />
-                        <StatusBanner type={correctness.isAiCorrect ? 'success' : 'error'} message={`AI is ${correctness.isAiCorrect ? 'RIGHT' : 'WRONG'}.`} />
-                      </Space>
-                    </List>
+              <StatusBanner
+                type='success'
+                message='Prediction'
+                description={
+                  (
+                    <Space direction='vertical' style={{ width: '100%' }}>
+                      <Space>input: <CoreCodeComment code={modelPrediction?.input} /></Space>
+                      <Space>guessFloat: <CoreCodeComment code={modelPrediction?.guessFloat} /></Space>
+                      <Space>guessRounded: <CoreCodeComment code={modelPrediction?.guessRounded} /></Space>
+                    </Space>
+                  )
                 }
+              />
 
-                <StatusBanner type='success' message='Train neural network.' />
+              {
+                correctness &&
+                  <List bordered style={{ padding: 0 }}>
+                    <Space direction='vertical' style={{ width: '100%' }}>
+                      <StatusBanner type='warning' message={`AI predicts dot is ${correctness.guessRounded ? 'INSIDE' : 'OUTSIDE'} circle.`} />
+                      <StatusBanner type={correctness.isAiCorrect ? 'success' : 'error'} message={`AI is ${correctness.isAiCorrect ? 'RIGHT' : 'WRONG'}.`} />
+                    </Space>
+                  </List>
+              }
 
-                <Button
-                  block
-                  disabled={disabledTrainingButton}
-                  type='primary'
-                  loading={insertModelSampleLoading}
-                  onClick={async () => trainModelWithFitness(dimensions, modelPrediction)}
-                >
-                  Train Model that coords belong {correctness?.correctAiOutput ? 'INSIDE' : 'OUTSIDE'} circle
-                </Button>
+              <StatusBanner type='success' message='Train neural network.' />
 
-              </Space>
+              <Button
+                block
+                disabled={disabledTrainingButton}
+                type='primary'
+                loading={insertModelSampleLoading}
+                onClick={async () => trainModelWithFitness(dimensions, modelPrediction)}
+              >
+                Train Model that coords belong {correctness?.correctAiOutput ? 'INSIDE' : 'OUTSIDE'} circle
+              </Button>
 
-            </>
+            </Space>
         }
 
       </Space>
@@ -549,6 +547,9 @@ const returnCalulatedCorrectness = ({ dimensions, coords, guessRounded }) => {
 
   const a = input.x - canvasCenter.x
   const b = input.y - canvasCenter.y
+
+  if (isNaN(a)) throw new Error('input object is string ')
+
   const inputRadius = Math.sqrt((a * a) + (b * b))
   const correctAiOutput = inputRadius <= canvasRadius ? 1 : 0
 
@@ -562,6 +563,7 @@ const returnCalulatedCorrectness = ({ dimensions, coords, guessRounded }) => {
 
   correctness.isAiCorrect = isAiCorrect
 
+  // console.log('final', correctness)
   return correctness
 }
 
@@ -610,6 +612,7 @@ const Canvas2D = ({ canvasRef, dimensions, resized, trained, setDimensions }) =>
 
   return (
     <Card
+      style={{ width: 750 }}
       title={<StatusBanner type='success' message='Canvas' description={<CoreCodeComment code={JSON.stringify(dimensions)} />} />}
       extra={
         <Button
