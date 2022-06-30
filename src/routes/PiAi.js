@@ -10,7 +10,7 @@ import CoreCodeComment from '../components/CoreCodeComment'
 import { INSERT_MODEL_SAMPLE } from '../routes/InsertModelSample'
 import { CORE_QUERY_FIELDS } from '../lib'
 
-import { Space, Card, Col, Button, Alert, Typography, List } from 'antd'
+import { Space, Card, Col, Button, Alert, Typography, List, Spin } from 'antd'
 
 const { Text } = Typography
 
@@ -139,6 +139,10 @@ const PiAi = () => {
     ctx.fillText(label || `${x} x ${y}`, x - 50, y + 40)
   }
 
+  const resetCanvas = () => {
+    console.log('resetCanvas')
+  }
+
   // CANVAS ON LOAD
   useEffect(() => {
     if (!dimensions) {
@@ -260,6 +264,7 @@ const PiAi = () => {
           resized={resized}
           dimensions={dimensions}
           apiKey={neuralNetwork?.apiKey}
+          samplingclientId={samplingclientId}
           trained={trained}
           input={input}
           setInput={setInput}
@@ -275,6 +280,7 @@ const PiAi = () => {
           canvasRef={canvasRef}
           dimensions={dimensions}
           trained={trained}
+          resetCanvas={resetCanvas}
         />
 
       </Space>
@@ -285,10 +291,18 @@ const PiAi = () => {
 
 export default PiAi
 
-const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, insertModelSampleMutation, insertModelSampleLoading, canvasRef, drawDot, correctAiOutput }) => {
+const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, input, setInput, insertModelSampleMutation, insertModelSampleLoading, canvasRef, drawDot, correctAiOutput }) => {
+  const returnRandomCoordinates = dimensions => {
+    const { width, height } = dimensions
+    const x = Math.round(Math.random() * width)
+    const y = Math.round(Math.random() * height)
+    return { x, y }
+  }
+
   const [modelPrediction, setModelPrediction] = useState()
   const [correctness, setCorrectness] = useState()
   const [running, setRunning] = useState()
+  const [runningContinuously, setRunningContinuously] = useState()
 
   const [insertModelPredictionMutation, { data: insertModelPredictionData, loading: insertModelPredictionLoading, error: insertModelPredictionError }] = useMutation(INSERT_MODEL_PREDICTION)
 
@@ -325,18 +339,19 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
     if (!input) return setModelPrediction(false)
   }, [input, setModelPrediction])
 
-  const returnRandomCoordinates = dimensions => {
-    const { width, height } = dimensions
-    const x = Math.round(Math.random() * width)
-    const y = Math.round(Math.random() * height)
-    return { x, y }
-  }
+  useEffect(async () => {
+    if (!runningContinuously) return
+    runOnce(setRunning, setInput, setModelPrediction)
+    console.log('runningContinuously', runningContinuously)
+  }, [insertModelSampleLoading, runningContinuously, setRunning, setInput, setModelPrediction])
 
-  const runOnce = async (dimensions, setInput, setModelPrediction, insertModelPredictionMutation, insertModelPredictionInput, setRunning) => {
+  const runOnce = async (setRunning, setInput, setModelPrediction, input) => {
     setRunning(true)
-    const coords = await setNewCoordsToInput(dimensions, setInput, setModelPrediction)
+    console.log('input', input)
+    const coords = input || await setNewCoordsToInput(dimensions, setInput, setModelPrediction)
 
-    const insertModelPrediction = await requestModelPrediction(insertModelPredictionMutation, { ...insertModelPredictionInput, input: coords })
+    console.log('coords', coords)
+    const insertModelPrediction = await requestModelPrediction(insertModelPredictionMutation, { apiKey, samplingclientId, input: coords })
 
     const autoModelPrediction = insertModelPrediction.data.insertModelPrediction
 
@@ -392,16 +407,38 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
       loading={!trained}
       title='Control Panel'
       extra={
-        <Button
-          loading={running}
-          disabled={!trained}
-          size='small'
-          shape='round'
-          type='default'
-          onClick={() => runOnce(dimensions, setInput, setModelPrediction, insertModelPredictionMutation, { apiKey, samplingclientId }, setRunning)}
-        >
-          Run Once
-        </Button>
+        <Space direction='vertical' align='center'>
+
+          <Button
+            loading={running}
+            disabled={!trained}
+            size='small'
+            shape='round'
+            type='default'
+            onClick={() => runOnce(setRunning, setInput, setModelPrediction, input)}
+          >
+            Run Once
+          </Button>
+
+          <Space>
+
+            <Button
+              disabled={!trained}
+              size='small'
+              shape='round'
+              type={runningContinuously ? 'danger' : 'default'}
+              onClick={() => setRunningContinuously(!runningContinuously)}
+            >
+              {runningContinuously && <>STOP</>}
+              {!runningContinuously && <>Run continuously</>}
+
+            </Button>
+
+            {runningContinuously && <Spin size='small' />}
+
+          </Space>
+
+        </Space>
       }
     >
       <Space direction='vertical' style={{ width: '100%' }}>
@@ -571,8 +608,9 @@ const style = {
   backgroundColor
 }
 
-const Canvas2D = ({ canvasRef, dimensions, resized, trained }) => {
+const Canvas2D = ({ canvasRef, dimensions, resized, trained, resetCanvas }) => {
   const type = resized && 'danger'
+
   return (
     <Card
       title='Canvas2D'
@@ -582,6 +620,7 @@ const Canvas2D = ({ canvasRef, dimensions, resized, trained }) => {
           size='small'
           shape='round'
           type='default'
+          onClick={resetCanvas}
         >
           Reset
         </Button>
