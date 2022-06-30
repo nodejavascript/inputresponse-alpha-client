@@ -139,10 +139,6 @@ const PiAi = () => {
     ctx.fillText(label || `${x} x ${y}`, x - 50, y + 40)
   }
 
-  const resetCanvas = () => {
-    console.log('resetCanvas')
-  }
-
   // CANVAS ON LOAD
   useEffect(() => {
     if (!dimensions) {
@@ -280,7 +276,7 @@ const PiAi = () => {
           canvasRef={canvasRef}
           dimensions={dimensions}
           trained={trained}
-          resetCanvas={resetCanvas}
+          setDimensions={setDimensions}
         />
 
       </Space>
@@ -350,15 +346,12 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
   useEffect(async () => {
     if (!runningContinuously) return
     runOnce(setRunning, setInput, setModelPrediction)
-    console.log('runningContinuously', runningContinuously)
   }, [insertModelSampleLoading, runningContinuously, setRunning, setInput, setModelPrediction])
 
   const runOnce = async (setRunning, setInput, setModelPrediction, input) => {
     setRunning(true)
-    console.log('input', input)
     const coords = input || await setNewCoordsToInput(dimensions, setInput, setModelPrediction)
 
-    console.log('coords', coords)
     const insertModelPrediction = await requestModelPrediction(insertModelPredictionMutation, { apiKey, samplingclientId, input: coords })
 
     const autoModelPrediction = insertModelPrediction.data.insertModelPrediction
@@ -612,7 +605,7 @@ const style = {
   backgroundColor
 }
 
-const Canvas2D = ({ canvasRef, dimensions, resized, trained, resetCanvas }) => {
+const Canvas2D = ({ canvasRef, dimensions, resized, trained, setDimensions }) => {
   const type = resized && 'danger'
 
   return (
@@ -624,7 +617,7 @@ const Canvas2D = ({ canvasRef, dimensions, resized, trained, resetCanvas }) => {
           size='small'
           shape='round'
           type='default'
-          onClick={resetCanvas}
+          onClick={() => setDimensions(false)}
         >
           Reset
         </Button>
