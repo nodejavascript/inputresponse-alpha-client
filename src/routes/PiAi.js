@@ -274,6 +274,7 @@ const PiAi = () => {
           resized={resized}
           canvasRef={canvasRef}
           dimensions={dimensions}
+          trained={trained}
         />
 
       </Space>
@@ -287,6 +288,7 @@ export default PiAi
 const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, insertModelSampleMutation, insertModelSampleLoading, canvasRef, drawDot, correctAiOutput }) => {
   const [modelPrediction, setModelPrediction] = useState()
   const [correctness, setCorrectness] = useState()
+  const [running, setRunning] = useState()
 
   const [insertModelPredictionMutation, { data: insertModelPredictionData, loading: insertModelPredictionLoading, error: insertModelPredictionError }] = useMutation(INSERT_MODEL_PREDICTION)
 
@@ -311,7 +313,8 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
     const canvas = canvasRef.current
     const context = canvas.getContext('2d')
 
-    const { input, canvasCenter, inputRadius, isAiCorrect } = correctness
+    const { canvasCenter, inputRadius, isAiCorrect } = correctness
+    const input = JSON.parse(correctness.input)
 
     const color = isAiCorrect ? 'green' : 'red'
     drawDot(context, { ...input, size: 20, color })
@@ -329,15 +332,18 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
     return { x, y }
   }
 
-  const runOnce = async (dimensions, setInput, setModelPrediction, insertModelPredictionMutation, insertModelPredictionInput) => {
+  const runOnce = async (dimensions, setInput, setModelPrediction, insertModelPredictionMutation, insertModelPredictionInput, setRunning) => {
+    setRunning(true)
     const coords = await setNewCoordsToInput(dimensions, setInput, setModelPrediction)
 
     const insertModelPrediction = await requestModelPrediction(insertModelPredictionMutation, { ...insertModelPredictionInput, input: coords })
 
     const autoModelPrediction = insertModelPrediction.data.insertModelPrediction
-    // console.log('modelPrediction', modelPrediction)
 
+    setModelPrediction(autoModelPrediction)
     await trainModelWithFitness(dimensions, autoModelPrediction)
+
+    setRunning(false)
   }
 
   const setNewCoordsToInput = (dimensions, setInput, setModelPrediction) => {
@@ -359,7 +365,6 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
     const { apiKey } = neuralNetwork
 
     const input = JSON.parse(modelPrediction.input)
-    console.log('input', input)
 
     const coords = { input }
 
@@ -369,12 +374,12 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
 
     const insertModelSampleInput = { apiKey, samplingclientId, input, output }
 
-    const trained = await insertModelSampleMutation({
+    await insertModelSampleMutation({
       variables: {
         insertModelSampleInput
       }
     })
-    console.log('trained', trained)
+
     return setInput(false)
   }
 
@@ -388,10 +393,12 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
       title='Control Panel'
       extra={
         <Button
+          loading={running}
+          disabled={!trained}
           size='small'
           shape='round'
           type='default'
-          onClick={() => runOnce(dimensions, setInput, setModelPrediction, insertModelPredictionMutation, { apiKey, samplingclientId })}
+          onClick={() => runOnce(dimensions, setInput, setModelPrediction, insertModelPredictionMutation, { apiKey, samplingclientId }, setRunning)}
         >
           Run Once
         </Button>
@@ -404,7 +411,6 @@ const ControlPanel = ({ resized, dimensions, apiKey, trained, input, setInput, i
         {!input && <StatusBanner type='warning' message='Need random coordinates.' />}
 
         <Button
-          loading={!trained}
           block
           type={!input ? 'primary' : 'default'}
           onClick={() => setNewCoordsToInput(dimensions, setInput, setModelPrediction)}
@@ -565,12 +571,21 @@ const style = {
   backgroundColor
 }
 
-const Canvas2D = ({ canvasRef, dimensions, resized }) => {
+const Canvas2D = ({ canvasRef, dimensions, resized, trained }) => {
   const type = resized && 'danger'
   return (
     <Card
       title='Canvas2D'
-      extra='extra'
+      extra={
+        <Button
+          disabled={!trained}
+          size='small'
+          shape='round'
+          type='default'
+        >
+          Reset
+        </Button>
+      }
     >
       <Space direction='vertical' size='small' align='center'>
 
