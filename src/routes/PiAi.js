@@ -15,7 +15,7 @@ import { Space, Card, Row, Col, Button, Typography, List, Spin } from 'antd'
 
 const { Text } = Typography
 
-const outerCircleSize = 10
+// const outerCircleSize = 10
 const innerCircleSize = 10
 
 const neuralnetworkId = '62ae4da63976c4a5dfbbab9f'
@@ -279,7 +279,7 @@ const PiAi = () => {
 
 export default PiAi
 
-const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, input, setInput, insertModelSampleMutation, insertModelSampleLoading, canvasRef, drawDot, correctAiOutput, trainNeuralNetworkMutation, trainNeuralNetworkLoading, neuralnetworkId }) => {
+const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, input, setInput, insertModelSampleMutation, insertModelSampleLoading, canvasRef, drawDot, trainNeuralNetworkMutation, trainNeuralNetworkLoading, neuralnetworkId }) => {
   const returnRandomCoordinates = dimensions => {
     const { width, height } = dimensions
     const x = Math.round(Math.random() * width)
@@ -340,12 +340,11 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
     const canvas = canvasRef.current
     const context = canvas.getContext('2d')
 
-    const { input, canvasCenter, inputRadius, isAiCorrect } = correctness
+    const { input, isAiCorrect } = correctness
 
-    const color = isAiCorrect ? 'green' : 'red'
-    const size = 10
-    drawDot(context, { ...input, size, color })
-    // drawDot(context, { ...canvasCenter, size: inputRadius, color: backgroundColor, dontfill: true })
+    const color = isAiCorrect ? 'blue' : 'red'
+    const size = 5
+    return drawDot(context, { ...input, size, color })
   }, [correctness, canvasRef, drawDot])
 
   useEffect(() => {
@@ -353,9 +352,16 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
   }, [input, setModelPrediction])
 
   useEffect(async () => {
-    if (!runningContinuously || insertModelSampleLoading) return
+    if (!runningContinuously || insertModelSampleLoading) {
+      await trainNeuralNetworkMutation({
+        variables: {
+          trainNeuralNetworkInput: { neuralnetworkId }
+        }
+      })
+      return setSampleCounter(0)
+    }
     runOnce(setRunning, setInput, setModelPrediction)
-  }, [insertModelSampleLoading, runningContinuously, setRunning, setInput, setModelPrediction])
+  }, [insertModelSampleLoading, runningContinuously, setRunning, setInput, setModelPrediction, trainNeuralNetworkMutation, setSampleCounter])
 
   const runOnce = async (setRunning, setInput, setModelPrediction, input) => {
     setRunning(true)
@@ -408,6 +414,8 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
 
   if (insertModelPredictionError) return <ErrorQuery error={insertModelPredictionError} />
 
+  const correctAiOutput = correctness?.correctAiOutput && correctness.correctAiOutput
+
   return (
     <Card
       loading={!trained}
@@ -427,26 +435,21 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
             {!running && <>Run once</>}
           </Button>
 
-          <Space>
+          <Button
+            disabled={!trained}
+            size='small'
+            shape='round'
+            type={runningContinuously ? 'danger' : 'default'}
+            onClick={() => setRunningContinuously(!runningContinuously)}
+          >
+            {runningContinuously && <>STOP</>}
+            {!runningContinuously && <>Run continuously</>}
 
-            <Button
-              disabled={!trained}
-              size='small'
-              shape='round'
-              type={runningContinuously ? 'danger' : 'default'}
-              onClick={() => setRunningContinuously(!runningContinuously)}
-            >
-              {runningContinuously && <>STOP</>}
-              {!runningContinuously && <>Run continuously</>}
+          </Button>
 
-            </Button>
+          {runningContinuously && <Spin size='small' />}
 
-            {runningContinuously && <Spin size='small' />}
-
-            <>{sampleCounter}</>
-
-          </Space>
-
+          <StatusBanner type='info' message={`Sample(s) needing training: ${sampleCounter}`} />
         </Space>
       }
     >
@@ -465,11 +468,27 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
         {
           input &&
             <Space direction='vertical' style={{ width: '100%' }}>
-              <StatusBanner type='success' message='Random coordinates plotted.' description={<CoreCodeComment code={JSON.stringify(input)} />} />
-
-              <List bordered style={{ padding: 0 }}>
-                <StatusBanner type='info' message={`Dot is ${correctAiOutput ? 'INSIDE' : 'OUTSIDE'} circle.`} />
-              </List>
+              <StatusBanner
+                type='success'
+                message='Random coordinates plotted.'
+                description={
+                  <List bordered style={{ padding: 0 }}>
+                    <List.Item>
+                      <CoreCodeComment code={JSON.stringify(input)} />
+                    </List.Item>
+                    <List.Item>
+                      {
+                        correctAiOutput >= 0 &&
+                          <StatusBanner type='info' message={`Dot is ${correctAiOutput === 1 ? 'INSIDE' : 'OUTSIDE'} circle.`} />
+                      }
+                      {
+                        isNaN(correctAiOutput) &&
+                          <StatusBanner type='warning' message='Dot is not predicted yet.' />
+                      }
+                    </List.Item>
+                  </List>
+                }
+              />
             </Space>
         }
 
@@ -507,7 +526,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
                 correctness &&
                   <List bordered style={{ padding: 0 }}>
                     <Space direction='vertical' style={{ width: '100%' }}>
-                      <StatusBanner type='warning' message={`AI predicts dot is ${correctness.guessRounded ? 'INSIDE' : 'OUTSIDE'} circle.`} />
+                      <StatusBanner type='warning' message={`AI predicts dot is ${correctness.guessRounded === 1 ? 'INSIDE' : 'OUTSIDE'} circle.`} />
                       <StatusBanner type={correctness.isAiCorrect ? 'success' : 'error'} message={`AI is ${correctness.isAiCorrect ? 'RIGHT' : 'WRONG'}.`} />
                     </Space>
                   </List>
