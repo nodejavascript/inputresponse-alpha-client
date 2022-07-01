@@ -6,13 +6,17 @@ import { gql, useMutation } from '@apollo/client'
 
 import ErrorQuery from '../components/ErrorQuery'
 import CoreCodeComment from '../components/CoreCodeComment'
+import StatusBanner from '../components/StatusBanner'
 
 import { INSERT_MODEL_SAMPLE } from '../routes/InsertModelSample'
 import { CORE_QUERY_FIELDS } from '../lib'
 
-import { Space, Card, Col, Button, Alert, Typography, List, Spin } from 'antd'
+import { Space, Card, Row, Col, Button, Typography, List, Spin } from 'antd'
 
 const { Text } = Typography
+
+const outerCircleSize = 10
+const innerCircleSize = 10
 
 const neuralnetworkId = '62ae4da63976c4a5dfbbab9f'
 const samplingclientId = '62ae59ca3976c4a5dfbbabff'
@@ -74,18 +78,6 @@ const INSERT_MODEL_PREDICTION = gql`
   }
 `
 
-const StatusBanner = ({ type = 'default', message = 'unknown', description }) => {
-  return (
-    <Alert
-      key={message}
-      banner
-      type={type}
-      message={message}
-      description={description}
-    />
-  )
-}
-
 const PiAi = () => {
   const [dimensions, setDimensions] = useState()
   const [resized, setResized] = useState(false)
@@ -126,7 +118,7 @@ const PiAi = () => {
   }
 
   const drawDot = (ctx, options) => {
-    const { x, y, size = 10, color = 'black', label, dontfill } = options
+    const { x, y, size = 2, color = 'black', dontfill } = options
     ctx.beginPath()
     ctx.strokeStyle = color
     ctx.fillStyle = color
@@ -136,7 +128,7 @@ const PiAi = () => {
     if (dontfill) return
 
     ctx.fill()
-    ctx.fillText(label || `${x} x ${y}`, x - 50, y + 40)
+    // ctx.fillText(label || `${x} x ${y}`, x - 50, y + 40)
   }
 
   // CANVAS ON LOAD
@@ -171,11 +163,8 @@ const PiAi = () => {
 
     await Promise.all(
       returnTrainingSamples(dimensions).map(async sample => {
-        return insertModelSampleMutation({
-          variables: {
-            insertModelSampleInput: { ...sample, ...insertCredentials, skipTraining: true }
-          }
-        })
+        const insertModelSampleInput = { ...sample, ...insertCredentials, skipTraining: true }
+        return insertModelSampleMutation({ variables: { insertModelSampleInput } })
       })
     )
 
@@ -194,18 +183,18 @@ const PiAi = () => {
   useEffect(() => {
     if (!input) return
 
-    const canvas = canvasRef.current
-    const context = canvas.getContext('2d')
+    // const canvas = canvasRef.current
+    // const context = canvas.getContext('2d')
+    //
+    // const coords = { input }
+    // const correctness = returnCalulatedCorrectness({ coords, dimensions })
+    //
+    // const { correctAiOutput } = correctness
+    //
+    // // if 1, inside cirlce, 0 is outside
+    // const color = correctAiOutput ? 'blue' : 'black'
 
-    const coords = { input }
-    const correctness = returnCalulatedCorrectness({ coords, dimensions })
-
-    const { correctAiOutput } = correctness
-
-    // if 1, inside cirlce, 0 is outside
-    const color = correctAiOutput ? 'blue' : 'black'
-
-    drawDot(context, { ...input, size: 40, color })
+    // drawDot(context, { ...input, size: outerCircleSize, color })
     // drawDot(context, { ...canvasCenter, size: inputRadius, color, dontfill: true })
     return setCorrectAiOutput(correctAiOutput)
   }, [input, dimensions, drawDot, setCorrectAiOutput])
@@ -220,7 +209,7 @@ const PiAi = () => {
 
     returnTrainingSamples(dimensions).forEach(sample => {
       const { input, name: label } = sample
-      drawDot(context, { ...input, size: 20, color, label })
+      drawDot(context, { ...input, size: innerCircleSize, color, label })
     })
 
     const correctness = returnCalulatedCorrectness({ dimensions })
@@ -236,10 +225,12 @@ const PiAi = () => {
   if (trainNeuralNetworkError) return <ErrorQuery error={trainNeuralNetworkError} />
 
   return (
-    <Space direction='vertical' style={{ width: '100%' }}>
+    <Space size='large' direction='vertical' style={{ width: '100%' }}>
 
       <Statuses
         resized={resized}
+        setDimensions={setDimensions}
+        anythingLoading={anythingLoading}
         neuralNetwork={neuralNetwork}
         dimensions={dimensions}
         disableModelSamplesLoading={disableModelSamplesLoading}
@@ -248,38 +239,39 @@ const PiAi = () => {
         trained={trained}
       />
 
-      <ResizeAlarm
-        resized={resized}
-        setDimensions={setDimensions}
-        anythingLoading={anythingLoading}
-      />
+      <Row justify='space-between' gutter={16}>
+        <Col span={12}>
+          <Canvas2D
+            resized={resized}
+            canvasRef={canvasRef}
+            dimensions={dimensions}
+            trained={trained}
+            setDimensions={setDimensions}
+          />
+        </Col>
 
-      <Space align='top' style={{ width: '100%' }}>
+        <Col span={12}>
 
-        <Canvas2D
-          resized={resized}
-          canvasRef={canvasRef}
-          dimensions={dimensions}
-          trained={trained}
-          setDimensions={setDimensions}
-        />
+          <ControlPanel
+            resized={resized}
+            dimensions={dimensions}
+            apiKey={neuralNetwork?.apiKey}
+            samplingclientId={samplingclientId}
+            trained={trained}
+            input={input}
+            setInput={setInput}
+            insertModelSampleMutation={insertModelSampleMutation}
+            insertModelSampleLoading={insertModelSampleLoading}
+            canvasRef={canvasRef}
+            drawDot={drawDot}
+            correctAiOutput={correctAiOutput}
+            trainNeuralNetworkMutation={trainNeuralNetworkMutation}
+            trainNeuralNetworkLoading={trainNeuralNetworkLoading}
+            neuralnetworkId={neuralnetworkId}
+          />
 
-        <ControlPanel
-          resized={resized}
-          dimensions={dimensions}
-          apiKey={neuralNetwork?.apiKey}
-          samplingclientId={samplingclientId}
-          trained={trained}
-          input={input}
-          setInput={setInput}
-          insertModelSampleMutation={insertModelSampleMutation}
-          insertModelSampleLoading={insertModelSampleLoading}
-          canvasRef={canvasRef}
-          drawDot={drawDot}
-          correctAiOutput={correctAiOutput}
-        />
-
-      </Space>
+        </Col>
+      </Row>
 
     </Space>
   )
@@ -287,7 +279,7 @@ const PiAi = () => {
 
 export default PiAi
 
-const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, input, setInput, insertModelSampleMutation, insertModelSampleLoading, canvasRef, drawDot, correctAiOutput }) => {
+const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, input, setInput, insertModelSampleMutation, insertModelSampleLoading, canvasRef, drawDot, correctAiOutput, trainNeuralNetworkMutation, trainNeuralNetworkLoading, neuralnetworkId }) => {
   const returnRandomCoordinates = dimensions => {
     const { width, height } = dimensions
     const x = Math.round(Math.random() * width)
@@ -300,18 +292,34 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
   const [correctness, setCorrectness] = useState()
   const [running, setRunning] = useState()
   const [runningContinuously, setRunningContinuously] = useState()
+  const [sampleCounter, setSampleCounter] = useState(0)
 
   const [insertModelPredictionMutation, { data: insertModelPredictionData, loading: insertModelPredictionLoading, error: insertModelPredictionError }] = useMutation(INSERT_MODEL_PREDICTION)
+
+  const trainingTreshold = 10
+
+  useEffect(() => {
+    if (!trainNeuralNetworkLoading && sampleCounter > trainingTreshold) setSampleCounter(sampleCounter - trainingTreshold)
+  }, [trainNeuralNetworkLoading, sampleCounter, setSampleCounter])
+
+  useEffect(() => {
+    if (sampleCounter === trainingTreshold) {
+      trainNeuralNetworkMutation({
+        variables: {
+          trainNeuralNetworkInput: { neuralnetworkId }
+        }
+      })
+    }
+  }, [sampleCounter])
 
   useEffect(() => {
     setModelPrediction(insertModelPredictionData?.insertModelPrediction)
 
-    if (insertModelPredictionData?.insertModelPrediction) setDisabledTrainingButton(false)
-  }, [insertModelPredictionData, setModelPrediction])
-
-  useEffect(() => {
-    if (insertModelSampleLoading) return setDisabledTrainingButton(true)
-  }, [insertModelSampleLoading, setDisabledTrainingButton])
+    if (insertModelPredictionData?.insertModelPrediction) {
+      setSampleCounter(sampleCounter + 1)
+      setDisabledTrainingButton(false)
+    }
+  }, [insertModelPredictionData, setModelPrediction, setSampleCounter])
 
   useEffect(() => {
     if (!modelPrediction) return setDisabledTrainingButton(true)
@@ -335,8 +343,9 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
     const { input, canvasCenter, inputRadius, isAiCorrect } = correctness
 
     const color = isAiCorrect ? 'green' : 'red'
-    drawDot(context, { ...input, size: 20, color })
-    drawDot(context, { ...canvasCenter, size: inputRadius, color: backgroundColor, dontfill: true })
+    const size = 10
+    drawDot(context, { ...input, size, color })
+    // drawDot(context, { ...canvasCenter, size: inputRadius, color: backgroundColor, dontfill: true })
   }, [correctness, canvasRef, drawDot])
 
   useEffect(() => {
@@ -388,13 +397,9 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
 
     const output = [correctness?.correctAiOutput]
 
-    const insertModelSampleInput = { apiKey, samplingclientId, input, output }
+    const insertModelSampleInput = { apiKey, samplingclientId, input, output, skipTraining: true }
 
-    await insertModelSampleMutation({
-      variables: {
-        insertModelSampleInput
-      }
-    })
+    await insertModelSampleMutation({ variables: { insertModelSampleInput } })
 
     // return setInput(false)
   }
@@ -438,6 +443,8 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
 
             {runningContinuously && <Spin size='small' />}
 
+            <>{sampleCounter}</>
+
           </Space>
 
         </Space>
@@ -471,6 +478,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
 
             <Space direction='vertical' style={{ width: '100%' }}>
               {!modelPrediction && <StatusBanner type='warning' message='Need an AiPi prediction.' />}
+              {modelPrediction && <StatusBanner type='info' message='AiPi predicted.' />}
 
               <Button
                 block
@@ -567,38 +575,60 @@ const returnCalulatedCorrectness = ({ dimensions, coords, guessRounded }) => {
   return correctness
 }
 
-const Statuses = ({ neuralNetwork, resized, dimensions, disableModelSamplesLoading, insertModelSampleLoading, trainNeuralNetworkLoading, trained }) => {
+const Statuses = ({ neuralNetwork, resized, setDimensions, anythingLoading, dimensions, disableModelSamplesLoading, insertModelSampleLoading, trainNeuralNetworkLoading, trained }) => {
   return (
-    <>
-      <Card title='The PiAi Experiment' extra='Status'>
-        Train a Neural network with the center and the 4 corners of a canvas. Plot it's guesses as you train. Predictions will be colorized and a circle will begin to be dotted. AI will infer Pi.
-      </Card>
+    <Row justify='space-between' gutter={16}>
 
-      <Card
-        title={<Col>Network: {neuralNetwork?.name}</Col>}
-        extra='Status'
-      >
-        {resized && <StatusBanner type='error' message='Canvas resize broke experiment' />}
+      <Col span={12}>
 
-        {!dimensions && <StatusBanner type='info' message='Canvas loading...' />}
-        {dimensions && <StatusBanner type='success' message='Canvas loaded.' />}
+        <Card
+          title='The PiAi Experiment'
+        >
 
-        {disableModelSamplesLoading && <StatusBanner type='info' message='Disabling existing model samples...' />}
-        {insertModelSampleLoading && <StatusBanner type='info' message='Inserting canvas dependent training samples...' />}
-        {trainNeuralNetworkLoading && <StatusBanner type='info' message='Training model...' />}
+          <Space direction='vertical'>
 
-        {!trained && <StatusBanner type='success' message='Model requires training.' />}
-        {trained && <StatusBanner type='success' message='Model training complete.' />}
+            <>
+              Train a Neural network with the center and the 4 corners of a canvas. Plot it's guesses as you train. Predictions will be colorized and a circle will begin to be dotted. AI will infer Pi.
+            </>
 
-        {!neuralNetwork && <StatusBanner type='info' message='Neural Network loading...' />}
-        {neuralNetwork && <StatusBanner type='success' message='Neural Network loaded.' />}
-      </Card>
-    </>
+            <ResizeAlarm
+              resized={resized}
+              setDimensions={setDimensions}
+              anythingLoading={anythingLoading}
+            />
+
+          </Space>
+        </Card>
+
+      </Col>
+
+      <Col span={12}>
+        <Card
+          title='Network Status'
+          extra={neuralNetwork?.name}
+        >
+          {resized && <StatusBanner type='error' message='Canvas resize broke experiment' />}
+
+          {!dimensions && <StatusBanner type='info' message='Canvas loading...' />}
+          {dimensions && <StatusBanner type='success' message='Canvas loaded.' />}
+
+          {disableModelSamplesLoading && <StatusBanner type='info' message='Disabling old sample(s)...' />}
+          {!disableModelSamplesLoading && <StatusBanner type='success' message='Old sample(s) disabled.' />}
+
+          {insertModelSampleLoading && <StatusBanner type='info' message='Inserting sample(s)...' />}
+          {!insertModelSampleLoading && <StatusBanner type='success' message='Sample(s) inserted.' />}
+
+          {trainNeuralNetworkLoading && <StatusBanner type='info' message='Training model...' />}
+          {!trainNeuralNetworkLoading && <StatusBanner type='success' message='Model trained.' />}
+
+        </Card>
+      </Col>
+    </Row>
   )
 }
 
 const ResizeAlarm = ({ resized, setDimensions }) => {
-  if (!resized) return <StatusBanner showIcon='true' type='warning' message='Do not resize canvas' description='Experiment is trained with { x, y } points from Canvas2D.' />
+  if (!resized) return <StatusBanner bordered='true' showIcon='true' type='warning' message='Do not resize canvas' description='Experiment is trained with { x, y } points from Canvas2D.' />
   return <Button size='small' danger onClick={() => setDimensions(false)}>Retrain Model</Button>
 }
 
@@ -612,7 +642,6 @@ const Canvas2D = ({ canvasRef, dimensions, resized, trained, setDimensions }) =>
 
   return (
     <Card
-      style={{ width: 750 }}
       title={<StatusBanner type='success' message='Canvas' description={<CoreCodeComment code={JSON.stringify(dimensions)} />} />}
       extra={
         <Button
