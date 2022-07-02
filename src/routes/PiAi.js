@@ -11,7 +11,8 @@ import StatusBanner from '../components/StatusBanner'
 import { INSERT_MODEL_SAMPLE } from '../routes/InsertModelSample'
 import { CORE_QUERY_FIELDS } from '../lib'
 
-import { Space, Card, Row, Col, Button, Typography, List, Spin } from 'antd'
+import { Space, Card, Row, Col, Button, Typography, List } from 'antd'
+import { SyncOutlined } from '@ant-design/icons'
 
 const { Text } = Typography
 
@@ -313,6 +314,17 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
   }, [sampleCounter])
 
   useEffect(() => {
+    if (!runningContinuously && sampleCounter > 0) {
+      trainNeuralNetworkMutation({
+        variables: {
+          trainNeuralNetworkInput: { neuralnetworkId }
+        }
+      })
+      setSampleCounter(0)
+    }
+  }, [runningContinuously, sampleCounter, setSampleCounter])
+
+  useEffect(() => {
     setModelPrediction(insertModelPredictionData?.insertModelPrediction)
 
     if (insertModelPredictionData?.insertModelPrediction) {
@@ -352,14 +364,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
   }, [input, setModelPrediction])
 
   useEffect(async () => {
-    if (!runningContinuously || insertModelSampleLoading) {
-      await trainNeuralNetworkMutation({
-        variables: {
-          trainNeuralNetworkInput: { neuralnetworkId }
-        }
-      })
-      return setSampleCounter(0)
-    }
+    if (!runningContinuously || insertModelSampleLoading) return
     runOnce(setRunning, setInput, setModelPrediction)
   }, [insertModelSampleLoading, runningContinuously, setRunning, setInput, setModelPrediction, trainNeuralNetworkMutation, setSampleCounter])
 
@@ -442,12 +447,17 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
             type={runningContinuously ? 'danger' : 'default'}
             onClick={() => setRunningContinuously(!runningContinuously)}
           >
-            {runningContinuously && <>STOP</>}
+            {
+              runningContinuously &&
+                <Space>
+                  <>STOP</>
+                  <SyncOutlined type='loading' spin />
+                </Space>
+            }
+
             {!runningContinuously && <>Run continuously</>}
 
           </Button>
-
-          {runningContinuously && <Spin size='small' />}
 
           <StatusBanner type='info' message={`Sample(s) needing training: ${sampleCounter}`} />
         </Space>
