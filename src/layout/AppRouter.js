@@ -35,7 +35,7 @@ import InsertModelPrediction from '../routes/InsertModelPrediction'
 import UpdateModelPrediction from '../routes/UpdateModelPrediction'
 
 // import Canvas from '../routes/Canvas'
-// import Charts from '../routes/Charts'
+import Charts from '../routes/Charts'
 import PiAi from '../routes/PiAi'
 
 import NoMatch from '../routes/NoMatch'
@@ -250,17 +250,17 @@ export const navigationalRoutes = [
   //   title: 'Canvas',
   //   element: <Canvas />
   // },
-  // {
-  //   exact: true,
-  //   path: '/charts',
-  //   title: 'Charts',
-  //   element: <Charts />
-  // },
   {
     exact: true,
     path: '/piai',
     title: 'PiAi',
     element: <PiAi />
+  },
+  {
+    exact: true,
+    path: '/charts',
+    title: 'Charts',
+    element: <Charts />
   },
   {
     exact: true,

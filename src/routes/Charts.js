@@ -1,11 +1,11 @@
 import React from 'react'
 import CoreCard from '../components/CoreCard'
-// import Chart from '../models/Chart'
+import Chart from '../models/Chart'
 
 const Charts = () => {
   return (
     <CoreCard>
-      coming soon....
+      <Chart />
     </CoreCard>
   )
 }

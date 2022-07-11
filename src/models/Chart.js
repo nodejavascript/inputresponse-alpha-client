@@ -3,7 +3,9 @@ import React from 'react'
 
 import { Line } from '@ant-design/charts'
 
-const Chart = () => {
+console.log('Line', Line)
+const Chart = ({ something }) => {
+
   const data = [
     { year: '1991', value: 3 },
     { year: '1992', value: 4 },
