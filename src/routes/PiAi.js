@@ -355,7 +355,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
     const { input, isAiCorrect } = correctness
 
     const color = isAiCorrect ? 'blue' : 'red'
-    const size = 5
+    const size = 20
     return drawDot(context, { ...input, size, color })
   }, [correctness, canvasRef, drawDot])
 
