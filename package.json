@@ -20,6 +20,7 @@
     "url": "https://github.com/nodejavascript/inputresponse-alpha-client/issues"
   },
   "dependencies": {
+    "@ant-design/colors": "^6.0.0",
     "@apollo/client": "^3.6.7",
     "@scaleway/use-query-params": "^3.1.4",
     "antd": "^4.21.0",

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
-
-import { useTimeout } from './CustomHooks'
-
+// import { useTimeout } from './CustomHooks'
 import { Chart as GoogleChart } from 'react-google-charts'
+
 
 const bubbleData = [
   ['ID', 'Life Expectancy', 'Fertility Rate', 'Region', 'blah'],
