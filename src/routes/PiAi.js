@@ -420,7 +420,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
   if (insertModelPredictionError) return <ErrorQuery error={insertModelPredictionError} />
 
   const correctAiOutput = correctness?.correctAiOutput && correctness.correctAiOutput
-
+  // console.log('correctness', correctness)
   return (
     <Card
       loading={!trained}
