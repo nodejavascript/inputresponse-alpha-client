@@ -1,43 +1,89 @@
-import React, { useState, useEffect } from 'react'
+// https://www.react-google-charts.com/examples/bubble-chart
 // import { useTimeout } from './CustomHooks'
-import { Chart as GoogleChart } from 'react-google-charts'
+import React, { useEffect } from 'react'
+import { gql, useSubscription } from '@apollo/client'
 
+// import { CORE_QUERY_FIELDS } from '../lib'
 
-const bubbleData = [
-  ['ID', 'Life Expectancy', 'Fertility Rate', 'Region', 'blah'],
-  ['CAN', 80.66, 1.67, 'North America', 33739900],
-  ['DEU', 79.84, 1.36, 'Europe', 81902307],
-  ['DNK', 78.6, 1.84, 'Europe', 5523095],
-  ['EGY', 72.73, 2.78, 'Middle East', 79716203],
-  ['GBR', 80.05, 2, 'Europe', 61801570],
-  ['IRN', 72.49, 1.7, 'Middle East', 73137148],
-  ['IRQ', 68.09, 4.77, 'Middle East', 31090763],
-  ['ISR', 81.55, 2.96, 'Middle East', 7485600],
-  ['RUS', 68.6, 1.54, 'Europe', 141850000],
-  ['USA', 78.09, 2.05, 'North America', 3044007000]
-]
+// import { Chart as GoogleChart } from 'react-google-charts'
 
-const options = {
-  title:
-    'Correlation between life expectancy, fertility rate ' +
-    'and population of some world countries (2010)',
-  hAxis: { title: 'Life Expectancy' },
-  vAxis: { title: 'Fertility Rate' },
-  bubble: { textStyle: { fontSize: 11 } }
-}
+import { Spin } from 'antd'
+
+const SUBSCRIPTION_SENSOR_DATA_INSERTED = gql`
+  subscription mySubscription {
+    sensorDataInserted {
+
+      topic
+      payload
+    }
+  }
+`
+
+// SW-420 Motion Sensor Module : ANALOG.A0
+// INA219 Bi-Direction DC Current Power Supply Breakout Sensor
+
+// const topic = 'tele/nodejavascriptSensorDemo/SENSOR'
+// const variables = { subscriptionSensorDataInserted: { topic } }
+// console.log('variables', variables)
+
+// const header = [
+//   [
+//     { type: 'date', label: 'Day' },
+//     'Voltage',
+//     'Current'
+//   ]
+// ]
+
+// const options = {
+//   chart: {
+//     title: 'Power usage'
+//   },
+//   width: 900,
+//   height: 500,
+//   series: {
+//     // Gives each series an axis name that matches the Y-axis below.
+//     0: { axis: 'Voltage' },
+//     1: { axis: 'Current' }
+//   },
+//   axes: {
+//     // Adds labels to each axis; they don't have to match the axis names.
+//     y: {
+//       Voltage: { label: 'V' },
+//       Current: { label: 'A' }
+//     }
+//   }
+// }
 
 const Chart = ({ something }) => {
-  const [data, setData] = useState(bubbleData)
+  const { loading, error, data: subscription } = useSubscription(SUBSCRIPTION_SENSOR_DATA_INSERTED)
 
-  return (
-    <GoogleChart
-      chartType='BubbleChart'
-      data={data}
-      width='100%'
-      height='600px'
-      options={options}
-    />
-  )
+  // const [data, setData] = useState()
+
+  useEffect(() => {
+    if (subscription) console.log('subscription', subscription)
+  }, [subscription])
+
+  // useEffect(() => {
+  //   console.log('loading', loading)
+  // }, [loading])
+  //
+  // useEffect(() => {
+  //   if (error) console.log('subscription', subscription)
+  //   console.log('error', error)
+  // }, [error])
+
+  if (loading) return <Spin size='large' />
+  if (subscription) return <>subscription</>
+
+  // return (
+  //   <GoogleChart
+  //     chartType='Line'
+  //     data={data}
+  //     width='100%'
+  //     height='600px'
+  //     options={options}
+  //   />
+  // )
 }
 
 export default Chart

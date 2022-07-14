@@ -5,7 +5,6 @@ import Chart from '../models/Chart'
 const Charts = () => {
   return (
     <CoreCard info={<Chart />} />
-
   )
 }
 
