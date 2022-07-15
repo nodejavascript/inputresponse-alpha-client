@@ -11,7 +11,7 @@ import StatusBanner from '../components/StatusBanner'
 import { INSERT_MODEL_SAMPLE } from '../routes/InsertModelSample'
 import { CORE_QUERY_FIELDS } from '../lib'
 
-import { Space, Card, Row, Col, Button, Typography, List } from 'antd'
+import { Space, Card, Row, Col, Button, Typography, List, message } from 'antd'
 import { SyncOutlined } from '@ant-design/icons'
 
 const { Text } = Typography
@@ -21,6 +21,7 @@ const innerCircleSize = 10
 
 const neuralnetworkId = '62ae4da63976c4a5dfbbab9f'
 const samplingclientId = '62ae59ca3976c4a5dfbbabff'
+const skipTraining = true
 
 const backgroundColor = '#fafafa'
 
@@ -164,7 +165,7 @@ const PiAi = () => {
 
     await Promise.all(
       returnTrainingSamples(dimensions).map(async sample => {
-        const insertModelSampleInput = { ...sample, ...insertCredentials, skipTraining: true }
+        const insertModelSampleInput = { ...sample, ...insertCredentials, skipTraining }
         return insertModelSampleMutation({ variables: { insertModelSampleInput } })
       })
     )
@@ -396,8 +397,8 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
     })
   }
 
-  const trainModelWithFitness = async (dimensions, modelPrediction) => {
-    const { guessRounded, neuralNetwork, samplingclientId } = modelPrediction
+  const trainModelWithFitness = async (dimensions, modelPrediction, manual) => {
+    const { id: modelpredictionId, guessRounded, neuralNetwork, samplingclientId } = modelPrediction
     const { apiKey } = neuralNetwork
 
     const input = JSON.parse(modelPrediction.input)
@@ -408,11 +409,13 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
 
     const output = [correctness?.correctAiOutput]
 
-    const insertModelSampleInput = { apiKey, samplingclientId, input, output, skipTraining: true }
+    const insertModelSampleInput = { apiKey, samplingclientId, input, output, skipTraining, modelpredictionId }
 
-    await insertModelSampleMutation({ variables: { insertModelSampleInput } })
+    const modelSample = await insertModelSampleMutation({ variables: { insertModelSampleInput } })
 
-    // return setInput(false)
+    message.success(`Sample inserted: ${modelSample.data.insertModelSample.id}`)
+
+    if (manual) return setInput(false)
   }
 
   if (resized || !dimensions) return null
@@ -549,7 +552,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
                 disabled={disabledTrainingButton}
                 type='primary'
                 loading={insertModelSampleLoading}
-                onClick={async () => trainModelWithFitness(dimensions, modelPrediction)}
+                onClick={async () => trainModelWithFitness(dimensions, modelPrediction, true)}
               >
                 Train Model that coords belong {correctness?.correctAiOutput ? 'INSIDE' : 'OUTSIDE'} circle
               </Button>
