@@ -1,89 +1,136 @@
 // https://www.react-google-charts.com/examples/bubble-chart
 // import { useTimeout } from './CustomHooks'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { gql, useSubscription } from '@apollo/client'
 
-// import { CORE_QUERY_FIELDS } from '../lib'
+import { CORE_QUERY_FIELDS } from '../lib'
 
-// import { Chart as GoogleChart } from 'react-google-charts'
+import { Chart as GoogleChart } from 'react-google-charts'
 
-import { Spin } from 'antd'
+// import ReactJson from 'react-json-view'
+
+import { Spin, Space, Statistic, Typography } from 'antd'
 
 const SUBSCRIPTION_SENSOR_DATA_INSERTED = gql`
-  subscription mySubscription {
-    sensorDataInserted {
-
+  subscription mySubscription  ($subscriptionSensorDataInserted: SubscriptionSensorDataInserted!) {
+    sensorDataInserted (subscriptionSensorDataInserted: $subscriptionSensorDataInserted) {
+      ${CORE_QUERY_FIELDS}
       topic
       payload
     }
   }
 `
 
-// SW-420 Motion Sensor Module : ANALOG.A0
-// INA219 Bi-Direction DC Current Power Supply Breakout Sensor
+const scatterHeader = ['Current', 'Voltage']
 
-// const topic = 'tele/nodejavascriptSensorDemo/SENSOR'
-// const variables = { subscriptionSensorDataInserted: { topic } }
-// console.log('variables', variables)
+const scatterOptionsInit = {
+  title: 'Voltage vs. Current comparison',
+  hAxis: { title: 'Current', minValue: 0, maxValue: 0 },
+  vAxis: { title: 'Voltage', minValue: 0, maxValue: 0 },
+  legend: 'none',
+  pointSize: 6,
+  width: '100%'
+}
 
-// const header = [
-//   [
-//     { type: 'date', label: 'Day' },
-//     'Voltage',
-//     'Current'
-//   ]
-// ]
+const guagesHeader = ['Label', 'Value']
+const guageOptions = { height: 240 }
 
-// const options = {
-//   chart: {
-//     title: 'Power usage'
-//   },
-//   width: 900,
-//   height: 500,
-//   series: {
-//     // Gives each series an axis name that matches the Y-axis below.
-//     0: { axis: 'Voltage' },
-//     1: { axis: 'Current' }
-//   },
-//   axes: {
-//     // Adds labels to each axis; they don't have to match the axis names.
-//     y: {
-//       Voltage: { label: 'V' },
-//       Current: { label: 'A' }
-//     }
-//   }
-// }
+const optionsCurrent = {
+  ...guageOptions,
+  max: 0.001
+}
+
+const optionsVoltage = {
+  ...guageOptions,
+  max: 0.001
+}
+
+const topic = 'tele/nodejavascriptSensorDemo/SENSOR'
 
 const Chart = ({ something }) => {
-  const { loading, error, data: subscription } = useSubscription(SUBSCRIPTION_SENSOR_DATA_INSERTED)
+  const { data: subscription } = useSubscription(SUBSCRIPTION_SENSOR_DATA_INSERTED, { variables: { subscriptionSensorDataInserted: { topic } } })
 
-  // const [data, setData] = useState()
+  const [data, setData] = useState()
+  const [record, setRecord] = useState()
+  const [guageCurrent, setGuageCurrent] = useState()
+  const [guageVoltage, setGuageVoltage] = useState()
+  const [scatterOptions, setOptionsVoltage] = useState(scatterOptionsInit)
 
   useEffect(() => {
-    if (subscription) console.log('subscription', subscription)
-  }, [subscription])
+    if (!record) return
+    const [current, voltage] = record
 
-  // useEffect(() => {
-  //   console.log('loading', loading)
-  // }, [loading])
-  //
-  // useEffect(() => {
-  //   if (error) console.log('subscription', subscription)
-  //   console.log('error', error)
-  // }, [error])
+    const maxCurrent = scatterOptions.hAxis.maxValue
+    const maxVoltage = scatterOptions.vAxis.maxValue
 
-  if (loading) return <Spin size='large' />
-  if (subscription) return <>subscription</>
+    if (current > maxCurrent || voltage > maxVoltage) {
+      const settings = { ...scatterOptions }
+      if (current > maxCurrent) settings.hAxis.maxValue = current
+      if (voltage > maxVoltage) settings.vAxis.maxValue = voltage
 
-  // return (
-  //   <GoogleChart
-  //     chartType='Line'
-  //     data={data}
-  //     width='100%'
-  //     height='600px'
-  //     options={options}
-  //   />
-  // )
+      setOptionsVoltage(settings)
+    }
+
+    setGuageCurrent([guagesHeader, ['Current', record[0]]])
+    return setGuageVoltage([guagesHeader, ['Voltage', record[1]]])
+  }, [record, scatterOptions, setOptionsVoltage, setGuageCurrent, setGuageVoltage])
+
+  useEffect(() => {
+    if (!record) return
+    if (!data) return setData([scatterHeader, record])
+    if (data) return setData([...data, record])
+  }, [record, setData])
+
+  useEffect(() => {
+    if (!subscription?.sensorDataInserted?.payload) return
+
+    const { INA219 } = subscription.sensorDataInserted.payload
+    const { Voltage, Current } = INA219
+
+    const record = [Current, Voltage]
+    return setRecord(record)
+  }, [subscription, setRecord])
+
+  return (
+    <Space direction='vertical' aling='center' style={{ width: '100%' }}>
+
+      <Typography.Title level={3}>INA219 Bi-Direction DC Current Power Supply Breakout Sensor</Typography.Title>
+
+      {
+        !data &&
+          <Space>
+            <Spin />
+            Subscribing...
+          </Space>
+      }
+
+      <Space>
+
+        <GoogleChart
+          chartType='Gauge'
+          data={guageCurrent}
+          options={optionsCurrent}
+        />
+
+        <GoogleChart
+          chartType='Gauge'
+          data={guageVoltage}
+          options={optionsVoltage}
+        />
+
+      </Space>
+
+      <Statistic title='Points plotted' value={data?.length - 1 || 0} />
+      <GoogleChart
+        chartType='ScatterChart'
+        data={data}
+        width='100%'
+        height='600px'
+        options={scatterOptions}
+      />
+
+    </Space>
+  )
 }
 
 export default Chart
