@@ -409,7 +409,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
 
     const output = [correctness?.correctAiOutput]
 
-    const insertModelSampleInput = { apiKey, samplingclientId, input, output, skipTraining, modelpredictionId }
+    const insertModelSampleInput = { apiKey, samplingclientId, input: { ...input, r: correctness.inputRadius }, output, skipTraining, modelpredictionId }
 
     const modelSample = await insertModelSampleMutation({ variables: { insertModelSampleInput } })
 
@@ -462,7 +462,7 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
 
           </Button>
 
-          <StatusBanner type='info' message={`Sample(s) needing training: ${sampleCounter}`} />
+          <StatusBanner type='info' message={`Samples in training queue: ${sampleCounter}`} />
         </Space>
       }
     >
@@ -567,35 +567,20 @@ const ControlPanel = ({ resized, dimensions, apiKey, samplingclientId, trained, 
 }
 
 const returnCalulatedCorrectness = ({ dimensions, coords, guessRounded }) => {
-  const { width, height } = dimensions
-
-  const canvasCenter = {
-    x: parseInt(width / 2),
-    y: parseInt(height / 2)
-  }
-  const canvasRadius = canvasCenter.x < canvasCenter.y ? canvasCenter.x : canvasCenter.y
-
-  const correctness = {
-    dimensions,
-    canvasCenter,
-    canvasRadius
-  }
+  const correctness = { dimensions }
 
   if (!coords) return correctness
 
-  const { input } = coords
+  const { canvasCenter, canvasRadius, inputRadius } = returnRadius(dimensions, coords)
 
-  const a = input.x - canvasCenter.x
-  const b = input.y - canvasCenter.y
+  correctness.canvasCenter = canvasCenter
+  correctness.canvasRadius = canvasRadius
 
-  if (isNaN(a)) throw new Error('input object is string ')
-
-  const inputRadius = Math.sqrt((a * a) + (b * b))
   const correctAiOutput = inputRadius <= canvasRadius ? 1 : 0
 
   const isAiCorrect = guessRounded === correctAiOutput
 
-  correctness.input = input
+  correctness.input = coords.input
   correctness.inputRadius = inputRadius
   correctness.correctAiOutput = correctAiOutput
 
@@ -706,38 +691,63 @@ const Canvas2D = ({ canvasRef, dimensions, resized, trained, setDimensions }) =>
   )
 }
 
+const returnRadius = (dimensions, coords) => {
+  const { width, height } = dimensions
+
+  const canvasCenter = {
+    x: parseInt(width / 2),
+    y: parseInt(height / 2)
+  }
+
+  const canvasRadius = canvasCenter.x < canvasCenter.y ? canvasCenter.x : canvasCenter.y
+
+  const { input } = coords
+
+  const a = input.x - canvasCenter.x
+  const b = input.y - canvasCenter.y
+
+  if (isNaN(a)) throw new Error('input object is string ')
+
+  const inputRadius = Math.sqrt((a * a) + (b * b))
+  return { canvasCenter, canvasRadius, inputRadius }
+}
+
 // 3.14 x 7.62^2 x 3.048 = 150 m3
-const returnTrainingSamples = ({ width, height }) => {
-  const samples = []
+const returnTrainingSamples = dimensions => {
+  const { width, height } = dimensions
 
-  samples.push({
-    name: 'topLeft',
-    input: { x: 0, y: 0 },
-    output: [0]
-  })
+  const samples = [
+    {
+      name: 'topLeft',
+      input: { x: 0, y: 0 },
+      output: [0]
+    },
+    {
+      name: 'topRight',
+      input: { x: width, y: 0 },
+      output: [0]
+    },
+    {
+      name: 'bottomRight',
+      input: { x: width, y: height },
+      output: [0]
+    },
+    {
+      name: 'bottomLeft',
+      input: { x: 0, y: height },
+      output: [0]
+    },
+    {
+      name: 'center',
+      input: { x: parseInt(width / 2), y: parseInt(height / 2) },
+      output: [1]
+    }
+  ]
 
-  samples.push({
-    name: 'topRight',
-    input: { x: width, y: 0 },
-    output: [0]
-  })
-
-  samples.push({
-    name: 'bottomRight',
-    input: { x: width, y: height },
-    output: [0]
-  })
-
-  samples.push({
-    name: 'bottomLeft',
-    input: { x: 0, y: height },
-    output: [0]
-  })
-
-  samples.push({
-    name: 'center',
-    input: { x: parseInt(width / 2), y: parseInt(height / 2) },
-    output: [1]
+  samples.forEach((sample, index) => {
+    const { input } = sample
+    const { inputRadius } = returnRadius(dimensions, { input })
+    samples[index].input.r = inputRadius
   })
 
   return samples

@@ -14,7 +14,14 @@ const CoreCopyToClipboard = ({ field, text }) => {
 
   const icon = <SnippetsTwoTone />
 
+  // const onClickedCopy = args => {
+  //   console.log('args', args)
+  //   message.success('Copied!')
+  // }
+
   return (
+    // <Text copyable={{ text, icon, tooltips: false }} onClick={onClickedCopy}>
+    // where is the copied! callback?
     <Text copyable={{ text, icon }}>
       Copy <CoreCodeComment code={field} /> to clipboard
     </Text>
