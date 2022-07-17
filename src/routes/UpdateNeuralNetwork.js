@@ -38,7 +38,6 @@ const UpdateNeuralNetwork = ({ paths, hideTitle }) => {
 
   return (
     <CoreForm
-      info={<InfoNeuralNetwork record={record} />}
       queryLoading={queryLoading}
       queryError={queryError}
       record={record}

@@ -26,29 +26,12 @@ export const QUERY_NEURAL_NETWORK = gql`
       modelSize
 
       memoryNeuralNetwork {
-        modelSize
-        trainingMs
-        samplesPerSecond
-        createdAt
+        isTrained
       }
 
       lastTrainingHistory {
-
-        modelSize
         trainingMs
         samplesPerSecond
-        iterations
-
-        createdAtAgo
-      }
-
-      samplingClients {
-        ${CORE_QUERY_FIELDS}
-      }
-      modelSamples {
-        ${CORE_QUERY_FIELDS}
-        input
-        output
       }
 
     }

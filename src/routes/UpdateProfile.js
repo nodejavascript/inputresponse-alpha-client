@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { gql, useQuery, useMutation } from '@apollo/client'
 
-import InfoProfile from '../models/InfoProfile'
 import CoreForm from '../components/CoreForm'
 
 import { Form, message } from 'antd'
@@ -37,7 +36,6 @@ const UpdateProfile = ({ paths, hideTitle }) => {
 
   return (
     <CoreForm
-      info={<InfoProfile record={record} />}
       queryLoading={queryLoading}
       queryError={queryError}
       record={record}

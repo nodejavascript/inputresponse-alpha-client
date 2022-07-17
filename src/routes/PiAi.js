@@ -34,9 +34,6 @@ const FIELDS_NEURAL_NETWORK = `
     input
     output
   }
-  memoryNeuralNetwork {
-    trainingMs
-  }
 `
 
 const DISABLE_MODEL_SAMPLES = gql`

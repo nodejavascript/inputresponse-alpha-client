@@ -1,13 +1,16 @@
 import React from 'react'
 
-import { green } from '@ant-design/colors'
-import { Space, Progress } from 'antd'
+// import { green } from '@ant-design/colors'
+import { Space } from 'antd'
 
 const ModelSize = ({ record }) => {
+  if (!record) return null
+  const { modelSize, lastTrainingHistory } = record
   return (
-    <Space>
-      {record.modelSize} samples
-      <Progress percent={50} steps={5} size='small' strokeColor={green[6]} showInfo />
+    <Space size='small' wrap>
+      <p>modelSize: {modelSize}</p>
+      {lastTrainingHistory?.trainingMs && <p>trainingMs: {lastTrainingHistory?.trainingMs}</p>}
+      {lastTrainingHistory?.samplesPerSecond && <p>samplesPerSecond: {lastTrainingHistory?.samplesPerSecond}</p>}
     </Space>
   )
 }

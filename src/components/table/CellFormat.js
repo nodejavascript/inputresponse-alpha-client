@@ -18,7 +18,7 @@ const CellFormat = ({ topRow, bottomRow }) => {
         bottomRow &&
           <Row>
             <Col>
-              <Text style={{ fontSize: 10 }}>{bottomRow}</Text>
+              <Text style={{ fontSize: 12 }}>{bottomRow}</Text>
             </Col>
           </Row>
       }

@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import toObject from 'convert-to-object'
 
-import InfoModelPrediction from '../models/InfoModelPrediction'
 import CoreForm from '../components/CoreForm'
 
 import { QUERY_MODEL_PREDICTION_DEPENDENCIES, FormModelPrediction } from './InsertModelPrediction'
@@ -44,7 +43,6 @@ const UpdateModelPrediction = ({ paths, hideTitle }) => {
 
   return (
     <CoreForm
-      info={<InfoModelPrediction record={record} />}
       queryLoading={queryLoading || depLoading}
       queryError={queryError || depError}
       record={record}

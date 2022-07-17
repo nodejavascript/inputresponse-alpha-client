@@ -4,51 +4,33 @@ import { gql, useQuery } from '@apollo/client'
 import { CORE_QUERY_FIELDS } from '../lib'
 
 import CoreTable from '../components/CoreTable'
-import ModelSize from '../components/ModelSize'
-import CellFormat from '../components/table/CellFormat'
+import ModelTrained from '../components/ModelTrained'
 
 import { Badge } from 'antd'
 
-export const QUERY_NEURAL_NETWORKS = gql`
+const QUERY_NEURAL_NETWORKS = gql`
   query queryNeuralNetworks {
     neuralNetworks {
       ${CORE_QUERY_FIELDS}
 
-      apiKey
-      apiKeyCreated
-      apiKeyExpires
       apiKeyExpired
-
-      apiKeyCreatedAgo
-      apiKeyCreatedUnix
-      apiKeyExpiresAgo
       apiKeyExpiresUnix
 
       modelSize
 
       memoryNeuralNetwork {
-        modelSize
+        isTrained
+      }
+
+      lastTrainingHistory {
         trainingMs
         samplesPerSecond
-        createdAt
+        updatedAtAgo
       }
+
     }
   }
 `
-
-export const ModelTrained = ({ record }) => {
-  let topRow = <Badge status='processing' text='Trained' />
-
-  if (!record?.memoryNeuralNetwork) topRow = <Badge status='default' text='Offline' />
-  if (!record?.memoryNeuralNetwork?.samplesPerSecond) topRow = <Badge status='error' text='Not trained' />
-
-  return (
-    <CellFormat
-      topRow={topRow}
-      bottomRow={<ModelSize record={record} />}
-    />
-  )
-}
 
 const ApiKeyExpiry = ({ record }) => {
   if (record?.apiKeyExpired) return <Badge status='error' text='Invalid' />
@@ -64,7 +46,7 @@ const ListNeuralNetworks = ({ paths }) => {
       title: 'Neural network',
       key: 'memoryNeuralNetwork',
       render: record => <ModelTrained record={record} />,
-      sorter: (a, b) => a?.memoryNeuralNetwork && a.memoryNeuralNetwork.localeCompare(b.memoryNeuralNetwork)
+      sorter: (a, b) => a.memoryNeuralNetwork?.isTrained.localeCompare(b.memoryNeuralNetwork?.isTrained)
     },
     {
       title: 'API key',

@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import toObject from 'convert-to-object'
 
-import InfoModelSample from '../models/InfoModelSample'
 import CoreForm from '../components/CoreForm'
 
 import { QUERY_MODEL_SAMPLE_DEPENDENCIES, FormModelSample } from './InsertModelSample'
@@ -44,7 +43,6 @@ const UpdateModelSample = ({ paths, hideTitle }) => {
 
   return (
     <CoreForm
-      info={<InfoModelSample record={record} />}
       queryLoading={queryLoading || depLoading}
       queryError={queryError || depError}
       record={record}

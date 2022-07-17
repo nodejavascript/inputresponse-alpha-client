@@ -12,7 +12,7 @@ import { Chart as GoogleChart } from 'react-google-charts'
 import { Spin, Space, Statistic, Typography } from 'antd'
 
 const SUBSCRIPTION_SENSOR_DATA_INSERTED = gql`
-  subscription mySubscription  ($subscriptionSensorDataInserted: SubscriptionSensorDataInserted!) {
+  subscription sensorDataInsertedSubscription ($subscriptionSensorDataInserted: SubscriptionSensorDataInserted!) {
     sensorDataInserted (subscriptionSensorDataInserted: $subscriptionSensorDataInserted) {
       ${CORE_QUERY_FIELDS}
       topic
